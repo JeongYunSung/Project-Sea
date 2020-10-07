@@ -3,11 +3,13 @@ buildscript {
         springBootversion = '2.3.4.RELEASE'
         springDependencyversion = '1.0.10.RELEASE'
     }
+
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootversion}")
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootversion}"
+        classpath "io.spring.gradle:dependency-management-plugin:${springDependencyversion}"
     }
 }
 
@@ -28,6 +30,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven { url 'https://jcenter.bintray.com/' } // 이게없으면 이벤츄에이트 트램이 안깔림
     }
 
     dependencies {
