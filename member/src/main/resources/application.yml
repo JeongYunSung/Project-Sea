@@ -1,0 +1,20 @@
+spring:
+  profiles:
+    include: db
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+      use-new-id-generator-mappings: false
+
+oauth2:
+  client_id: jys
+  client_secret: jys_secret
+  jwt_secret: jwt_secret
+  access_token_expire: 1800
+  refresh_token_expire: 18000
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
