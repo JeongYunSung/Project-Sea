@@ -3,11 +3,13 @@ ext {
 }
 
 dependencies {
+    implementation project(":member-api")
     implementation 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-oauth2'
     implementation 'org.springframework.cloud:spring-cloud-starter-security'
+    implementation 'io.eventuate.tram.core:eventuate-tram-events:$eventuateTramVersion'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
 

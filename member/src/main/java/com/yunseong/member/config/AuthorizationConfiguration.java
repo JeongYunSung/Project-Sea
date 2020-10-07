@@ -28,7 +28,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
     private AuthenticationManager authenticationManager;
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+    public void configure(AuthorizationServerSecurityConfigurer security) {
         security.passwordEncoder(this.passwordEncoder);
     }
 
@@ -37,14 +37,14 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
         clients
                 .inMemory()
                 .withClient(oAuth2Configuration.getClient_id())
-                .secret(oAuth2Configuration.getClient_secret())
+                .secret(this.passwordEncoder.encode(oAuth2Configuration.getClient_secret()))
                 .authorizedGrantTypes("password", "refresh_token")
                 .accessTokenValiditySeconds(oAuth2Configuration.getAccess_token_expire())
                 .refreshTokenValiditySeconds(oAuth2Configuration.getRefresh_token_expire());
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints
                 .tokenStore(this.tokenStore())
                 .authenticationManager(this.authenticationManager)
