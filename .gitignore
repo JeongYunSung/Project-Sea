@@ -5,6 +5,7 @@ application-db.yml
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+asdf
 
 ### STS ###
 .apt_generated
