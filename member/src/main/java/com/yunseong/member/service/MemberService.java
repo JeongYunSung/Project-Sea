@@ -11,6 +11,4 @@ public class MemberService {
 
     @Autowired
     private MemberRepository memberRepository;
-
-    public
 }

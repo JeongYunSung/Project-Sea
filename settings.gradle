@@ -1,3 +1,3 @@
 rootProject.name = 'projector'
 include 'member'
-
+include 'member-api'
