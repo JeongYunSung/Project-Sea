@@ -1,5 +1,6 @@
 package com.yunseong.member.config;
 
+import com.yunseong.member.service.MemberDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,9 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private MemberDetailsService memberDetailsService;
+
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) {
         security.passwordEncoder(this.passwordEncoder);
@@ -47,6 +51,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         endpoints
                 .tokenStore(this.tokenStore())
+                .userDetailsService(this.memberDetailsService)
                 .authenticationManager(this.authenticationManager)
                 .accessTokenConverter(this.jwtAccessTokenConverter());
     }
