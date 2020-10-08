@@ -1,5 +1,7 @@
 package com.yunseong.member.domain;
 
+import com.yunseong.member.domain.event.MemberSigned;
+import io.eventuate.tram.events.publisher.ResultWithEvents;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,4 +37,15 @@ public class Member {
     @Column(nullable = false)
     @LastModifiedDate
     private LocalDate updatedDate;
+
+    public Member(String username, String password, String nickname) {
+        this.username = username;
+        this.password = password;
+        this.nickname = nickname;
+        this.permission = Permission.USER;
+    }
+
+    public static ResultWithEvents<Member> create(String username, String password, String nickname) {
+        return new ResultWithEvents<>(new Member(username, password, nickname), new MemberSigned());
+    }
 }

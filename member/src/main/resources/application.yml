@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8081
 
 spring:
   profiles:
@@ -17,7 +17,17 @@ oauth2:
   access_token_expire: 1800
   refresh_token_expire: 18000
 
+eventuatelocal:
+  kafka:
+    bootstrap:
+      servers: localhost:9092
+  zookeeper:
+    connection:
+      string: localhost:2181
+
 logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type: trace
+    io.eventuate.SQL: debug
+    io.eventuate.tram: TRACE

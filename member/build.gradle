@@ -1,10 +1,8 @@
-ext {
-    springCloudVersion = 'Hoxton.SR8'
-    eventuateTramVersion = '0.24.0.RELEASE'
-}
+apply plugin: 'org.springframework.boot'
 
 dependencies {
     implementation project(":member-api")
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -12,7 +10,13 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-security'
     implementation "io.eventuate.tram.core:eventuate-tram-spring-events:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-spring-jdbc-kafka:${eventuateTramVersion}"
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
 }
 
 dependencyManagement {
