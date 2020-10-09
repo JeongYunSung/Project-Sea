@@ -1,0 +1,26 @@
+server:
+  port: 8082
+
+spring:
+  profiles:
+    include: db
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+      use-new-id-generator-mappings: false
+
+eventuatelocal:
+  kafka:
+    bootstrap:
+      servers: localhost:9092
+  zookeeper:
+    connection:
+      string: localhost:2181
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.type: trace
+    io.eventuate.SQL: debug
+    io.eventuate.tram: TRACE
