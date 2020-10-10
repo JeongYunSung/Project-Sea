@@ -23,9 +23,13 @@ public class Notification {
     @Column(nullable = false, updatable = false)
     private Long memberId;
 
+    @Column(nullable = false)
+    private String subject;
+
     @Column(nullable = false, updatable = false)
     private String content;
 
+    @Column(nullable = false)
     private boolean isRead;
 
     @Column(nullable = false, updatable = false)
@@ -36,8 +40,10 @@ public class Notification {
     @LastModifiedDate
     private LocalDate updatedDate;
 
-    public Notification(Long memberId, String content) {
+    public Notification(Long memberId, String subject, String content) {
         this.memberId = memberId;
+        this.subject = subject;
         this.content = content;
+        this.isRead = false;
     }
 }
