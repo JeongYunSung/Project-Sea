@@ -1,6 +1,6 @@
 package com.yunseong.member.domain;
 
-import com.yunseong.member.domain.event.MemberSigned;
+import com.yunseong.member.api.controller.events.MemberSignedEvent;
 import io.eventuate.tram.events.publisher.ResultWithEvents;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -46,6 +46,6 @@ public class Member {
     }
 
     public static ResultWithEvents<Member> create(String username, String password, String nickname) {
-        return new ResultWithEvents<>(new Member(username, password, nickname), new MemberSigned());
+        return new ResultWithEvents<>(new Member(username, password, nickname), new MemberSignedEvent(username, nickname));
     }
 }

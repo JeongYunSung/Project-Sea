@@ -26,7 +26,7 @@ public class Notification {
     @Column(nullable = false, updatable = false)
     private String content;
 
-    private Boolean read;
+    private boolean isRead;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
@@ -39,6 +39,5 @@ public class Notification {
     public Notification(Long memberId, String content) {
         this.memberId = memberId;
         this.content = content;
-        this.read = false;
     }
 }

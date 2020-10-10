@@ -19,6 +19,6 @@ public class NotificationServiceMessageHandlersConfiguration {
 
     @Bean
     public DomainEventDispatcher domainEventDispatcher(NotificationServiceEventConsumer notificationServiceEventConsumer, DomainEventDispatcherFactory domainEventDispatcherFactory) {
-        return domainEventDispatcherFactory.make("notificationServiceEvents", this.notificationServiceEventConsumer().domainEventHandlers());
+        return domainEventDispatcherFactory.make("notificationServiceEvents", notificationServiceEventConsumer.domainEventHandlers());
     }
 }
