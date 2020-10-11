@@ -19,12 +19,15 @@ buildscript {
     }
 }
 
+allprojects {
+    group = 'com.yunseong'
+    version = '0.0.1-SNAPSHOT'
+}
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'io.spring.dependency-management'
 
-    group = 'com.yunseong'
-    version = '0.0.1-SNAPSHOT'
     sourceCompatibility = '11'
 
     configurations {

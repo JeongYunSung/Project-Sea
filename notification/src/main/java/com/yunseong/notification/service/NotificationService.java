@@ -22,9 +22,14 @@ public class NotificationService {
     }
 
     public Notification findById(long id) {
-        return this.notificationRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(id + "를 가진 Notification 엔티티가 존재하지 않습니다."));
+        Notification notification = this.notificationRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(id + "를 가진 Notification 엔티티가 존재하지 않습니다."));
+        if(!notification.isRead()) {
+            notification.read();
+        }
+        return notification;
     }
 
+    @Transactional(readOnly = true)
     public Page<Notification> findAll(Pageable pageable) {
         return this.notificationRepository.findAll(pageable);
     }

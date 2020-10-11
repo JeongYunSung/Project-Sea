@@ -3,4 +3,5 @@ include 'member'
 include 'member-api'
 include 'notification'
 include 'project'
+include 'project-api'
 
