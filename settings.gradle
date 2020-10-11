@@ -4,4 +4,7 @@ include 'member-api'
 include 'notification'
 include 'project'
 include 'project-api'
+include 'weclass'
+include 'weclass-api'
+include 'common'
 

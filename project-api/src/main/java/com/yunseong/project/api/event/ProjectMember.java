@@ -22,7 +22,11 @@ public class ProjectMember {
     public ProjectMember(String username, boolean isLeader) {
         this.username = username;
         this.isLeader = isLeader;
-        this.projectMemberState = ProjectMemberState.JOIN;
+        this.projectMemberState = ProjectMemberState.JOINED;
+    }
+
+    public void setProjectMemberState(ProjectMemberState projectMemberState) {
+        this.projectMemberState = projectMemberState;
     }
 
     @Override

@@ -1,11 +1,12 @@
 package com.yunseong.project.service;
 
 import com.yunseong.project.api.controller.CreateProjectRequest;
-import com.yunseong.project.api.event.ProjectDetails;
+import com.yunseong.project.api.event.ProjectEvent;
 import com.yunseong.project.domain.Project;
+import com.yunseong.project.domain.ProjectDomainEventPublisher;
+import com.yunseong.project.domain.ProjectInfo;
 import com.yunseong.project.domain.ProjectRepository;
-import io.eventuate.tram.events.publisher.DomainEventPublisher;
-import io.eventuate.tram.events.publisher.ResultWithEvents;
+import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,16 +19,16 @@ public class ProjectService {
     private ProjectRepository projectRepository;
 
     @Autowired
-    private DomainEventPublisher domainEventPublisher;
+    private ProjectDomainEventPublisher projectDomainEventPublisher;
 
-    public ResultWithEvents<Project> createProject(CreateProjectRequest request) {
-        ProjectDetails projectDetails = new ProjectDetails(request.getSubject(), request.getContent(), request.getMaxPeople());
+    public ResultWithDomainEvents<Project, ProjectEvent> createProject(CreateProjectRequest request) {
+        ProjectInfo projectInfo = new ProjectInfo(request.getSubject(), request.getContent(), request.getMaxPeople());
         if(request.getMinPeople() == null || request.getMinPeople() == 0) {
-            projectDetails.setMinPeople(projectDetails.getMaxPeople());
+            projectInfo.setMinPeople(projectInfo.getMaxPeople());
         }
-        ResultWithEvents<Project> rwe = Project.create(request.getUsername(), projectDetails);
+        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getUsername(), projectInfo);
         this.projectRepository.save(rwe.result);
-        this.domainEventPublisher.publish(Project.class, rwe.result.getId(), rwe.events);
+        this.projectDomainEventPublisher.publish(rwe.result, rwe.events);
         return rwe;
     }
 }
