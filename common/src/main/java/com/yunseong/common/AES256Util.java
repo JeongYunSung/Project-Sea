@@ -14,7 +14,7 @@ public class AES256Util {
     private String iv;
     private Key keySpec;
 
-    final static String key = "test";
+    final static String key = "testPassword";
 
     public AES256Util() throws UnsupportedEncodingException {
         this.iv = key.substring(0, 16);
