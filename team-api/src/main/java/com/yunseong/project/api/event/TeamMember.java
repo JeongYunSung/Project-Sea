@@ -12,21 +12,26 @@ import javax.persistence.Enumerated;
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ProjectMember {
+public class TeamMember {
 
     private String username;
-    private boolean isLeader;
     @Enumerated(EnumType.STRING)
-    private ProjectMemberState projectMemberState;
+    private TeamPermission teamPermission;
+    @Enumerated(EnumType.STRING)
+    private TeamMemberState teamMemberState;
 
-    public ProjectMember(String username, boolean isLeader) {
+    public TeamMember(String username, TeamPermission teamPermission) {
         this.username = username;
-        this.isLeader = isLeader;
-        this.projectMemberState = ProjectMemberState.JOINED;
+        this.teamPermission = teamPermission;
+        this.teamMemberState = TeamMemberState.JOIN_PENDING;
     }
 
-    public void setProjectMemberState(ProjectMemberState projectMemberState) {
-        this.projectMemberState = projectMemberState;
+    public void setTeamMemberState(TeamMemberState teamMemberState) {
+        this.teamMemberState = teamMemberState;
+    }
+
+    public void setTeamPermission(TeamPermission teamPermission) {
+        this.teamPermission = teamPermission;
     }
 
     @Override

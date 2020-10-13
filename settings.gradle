@@ -7,4 +7,6 @@ include 'project-api'
 include 'weclass'
 include 'weclass-api'
 include 'common'
+include 'team'
+include 'team-api'
 

@@ -26,9 +26,9 @@ public class NotificationController {
         return ResponseEntity.ok(page.map(e -> new NotificationResponse(e.getSubject(), e.getContent())));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<NotificationResponse> findById(@PathVariable Long id) {
-        Notification notification = this.notificationService.findById(id);
+    @GetMapping("/{username}")
+    public ResponseEntity<NotificationResponse> findById(@PathVariable String username) {
+        Notification notification = this.notificationService.findByUsername(username);
         return ResponseEntity.ok(new NotificationResponse(notification.getSubject(), notification.getContent()));
     }
 }

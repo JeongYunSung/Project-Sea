@@ -3,6 +3,7 @@ apply plugin: 'org.springframework.boot'
 dependencies {
     implementation project(':common')
     implementation project(':project-api')
+    implementation project(':team-api')
     implementation 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -10,6 +11,9 @@ dependencies {
     implementation "io.eventuate.tram.core:eventuate-tram-spring-events:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-spring-jdbc-kafka:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-aggregate-domain-events:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-participant:${eventuateTramSagasVersion}"
+    implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-orchestration-simple-dsl:${eventuateTramSagasVersion}"
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'

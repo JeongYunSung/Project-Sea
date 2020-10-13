@@ -1,10 +1,9 @@
 package com.yunseong.project.domain;
 
 import com.yunseong.common.UnsupportedStateTransitionException;
-import com.yunseong.project.api.event.ProjectApproved;
-import com.yunseong.project.api.event.ProjectCreated;
+import com.yunseong.project.api.event.ProjectCreatedEvent;
+import com.yunseong.project.api.event.ProjectDetail;
 import com.yunseong.project.api.event.ProjectEvent;
-import com.yunseong.project.api.event.ProjectMember;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -15,7 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -28,13 +26,13 @@ public class Project {
     @GeneratedValue
     private Long id;
 
-    @Embedded
-    private ProjectInfo projectInfo;
+    private String subject;
+
+    private String content;
+
+    private Long teamId;
 
     private Long weClassId;
-
-    @Embedded
-    private ProjectMembers projectMembers;
 
     @Enumerated(EnumType.STRING)
     private ProjectState projectState;
@@ -45,39 +43,26 @@ public class Project {
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-    public Project(String username, ProjectInfo projectInfo) {
-        this.projectInfo = projectInfo;
-        this.projectMembers = new ProjectMembers(List.of(new ProjectMember(username, true)));
-        this.projectState = ProjectState.RECRUIT_PENDING;
+    public Project(long teamId, long weClassId, String subject, String content) {
+        this.teamId = teamId;
+        this.weClassId = weClassId;
+        this.subject = subject;
+        this.content = content;
+        this.projectState = ProjectState.POSTED;
     }
 
-    public static ResultWithDomainEvents<Project, ProjectEvent> create(String username, ProjectInfo projectInfo) {
-        return new ResultWithDomainEvents<>(new Project(username, projectInfo), new ProjectCreated(username));
+    public static ResultWithDomainEvents<Project, ProjectEvent> create(long teamId, long weClassId, String subject, String content) {
+        return new ResultWithDomainEvents<>(new Project(teamId, weClassId, subject, content), new ProjectCreatedEvent(new ProjectDetail(teamId, subject, content)));
     }
 
-    public List<ProjectEvent> projectJoined(String username) {
+    public void changeWeClassId(long weClassId) {
+        this.weClassId = weClassId;
+    }
+
+    public List<ProjectEvent> rejected() {
         switch(this.projectState) {
-            case RECRUIT_PENDING:
-                int size = this.getProjectMembers().getProjectMembers().size();
-                if(size -1 == this.projectInfo.getMaxPeople()) {
-                    this.projectState = ProjectState.APPROVAL_PENDING;
-                }
-                this.projectMembers.getProjectMembers().add(new ProjectMember(username, false));
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
-        }
-    }
+            case CLOSED:
 
-    public List<ProjectEvent> projectApproved() {
-        switch (this.projectState) {
-            case APPROVAL_PENDING:
-                int count = this.projectMembers.isApprovedCount();
-                if(this.projectInfo.getMinPeople() <= count && this.projectInfo.getMaxPeople() >= count) {
-                    this.projectState = ProjectState.APPROVED;
-                    return Collections.singletonList(new ProjectApproved(this.id, this.projectInfo.getSubject(), this.projectMembers.getProjectMembers()));
-                }
-                return Collections.emptyList();
             default:
                 throw new UnsupportedStateTransitionException(this.projectState);
         }

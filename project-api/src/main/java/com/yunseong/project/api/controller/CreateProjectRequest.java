@@ -9,9 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CreateProjectRequest {
 
-    private String username;
+    private long weClassId;
+    private long teamId;
     private String subject;
     private String content;
-    private Integer minPeople;
-    private Integer maxPeople;
 }
