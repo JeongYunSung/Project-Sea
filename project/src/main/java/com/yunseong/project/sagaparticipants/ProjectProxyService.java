@@ -15,8 +15,8 @@ public class ProjectProxyService {
             .withReply(Success.class)
             .build();
 
-    public final CommandEndpoint<ApproveProjectCommand> approve = CommandEndpointBuilder
-            .forCommand(ApproveProjectCommand.class)
+    public final CommandEndpoint<StartProjectCommand> start = CommandEndpointBuilder
+            .forCommand(StartProjectCommand.class)
             .withChannel(ProjectServiceChannels.projectServiceChannel)
             .withReply(Success.class)
             .build();

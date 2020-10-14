@@ -1,5 +1,6 @@
 package com.yunseong.project.messagehandlers;
 
+import com.yunseong.project.api.ProjectServiceChannels;
 import com.yunseong.project.sagaparticipants.RejectProjectCommand;
 import com.yunseong.project.service.ProjectService;
 import io.eventuate.tram.commands.consumer.CommandHandlers;
@@ -17,7 +18,7 @@ public class ProjectCommandHandlers {
 
     public CommandHandlers commandHandler() {
         return SagaCommandHandlersBuilder
-                .fromChannel("projectService")
+                .fromChannel(ProjectServiceChannels.projectServiceChannel)
                 .onMessage(RejectProjectCommand.class, this::rejectProject)
                 .build();
     }

@@ -7,10 +7,14 @@ dependencies {
     implementation 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation "io.eventuate.tram.core:eventuate-tram-spring-events:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-spring-jdbc-kafka:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-aggregate-domain-events:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-participant:${eventuateTramSagasVersion}"
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'

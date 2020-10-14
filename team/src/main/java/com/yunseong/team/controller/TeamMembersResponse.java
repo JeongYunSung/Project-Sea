@@ -1,6 +1,6 @@
 package com.yunseong.team.controller;
 
-import com.yunseong.project.api.event.TeamMember;
+import com.yunseong.project.api.event.TeamMemberDetail;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,5 +10,5 @@ import java.util.List;
 @AllArgsConstructor
 public class TeamMembersResponse {
 
-    private List<TeamMember> teamMembers;
+    private List<TeamMemberDetail> teamMembers;
 }

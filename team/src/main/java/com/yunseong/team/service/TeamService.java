@@ -1,11 +1,13 @@
 package com.yunseong.team.service;
 
 import com.yunseong.project.api.event.TeamEvent;
-import com.yunseong.project.api.event.TeamPermission;
 import com.yunseong.team.domain.Team;
 import com.yunseong.team.domain.TeamDomainEventPublisher;
+import com.yunseong.team.domain.TeamRejectException;
 import com.yunseong.team.domain.TeamRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,19 +41,29 @@ public class TeamService {
     }
 
     public Team accept(long teamId, String username) throws EntityNotFoundException {
-        return updateTeam(teamId, username, Team::approve);
+        return updateTeam(teamId, username, Team::memberApprove);
     }
 
     public Team reject(long teamId, String username) throws EntityNotFoundException {
-        return updateTeam(teamId, username, Team::reject);
+        return updateTeam(teamId, username, Team::memberReject);
     }
 
     public Team quitTeam(long teamId, String username) throws EntityNotFoundException {
-        return updateTeam(teamId, username, Team::quit);
+        return updateTeam(teamId, username, Team::memberQuit);
     }
 
     public Team joinTeam(long teamId, String username) throws EntityNotFoundException {
         return updateTeam(teamId, username, Team::join);
+    }
+
+    public void approveTeam(long projectId) throws TeamRejectException {
+        Team team = this.getTeamMembersByProjectId(projectId);
+        team.approveTeam();
+    }
+
+    public void rejectTeam(long projectId) {
+        Team team = this.getTeamMembersByProjectId(projectId);
+        team.rejectTeam();
     }
 
     @Transactional(readOnly = true)
@@ -59,8 +71,22 @@ public class TeamService {
         return getTeamByTeamId(teamId);
     }
 
+    @Transactional(readOnly = true)
+    public Team findTeamMembersByProjectId(long projectId) {
+        return this.teamRepository.findFetchByProjectId(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Long> findTeamByUsername(String username, Pageable pageable) {
+        return this.teamRepository.findByUsername(username, pageable);
+    }
+
     private void isUser(Team team, String username) throws EntityNotFoundException {
         if (!team.isUser(username)) throw new EntityNotFoundException("해당 유저는 해당 팀에 존재하지 않습니다.");
+    }
+
+    private Team getTeamMembersByProjectId(long projectId) {
+        return this.teamRepository.findByProjectId(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));
     }
 
     private Team getTeamByTeamId(long teamId) {

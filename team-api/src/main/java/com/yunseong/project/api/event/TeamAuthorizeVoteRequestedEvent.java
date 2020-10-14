@@ -7,8 +7,8 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class TeamAuthorizeVoteRequested implements TeamEvent {
+public class TeamAuthorizeVoteRequestedEvent implements TeamEvent {
 
     private long projectId;
-    private List<TeamMember> teamMembers;
+    private List<TeamMemberDetail> teamMembers;
 }

@@ -5,7 +5,7 @@ import com.yunseong.project.api.event.ProjectEvent;
 import com.yunseong.project.domain.Project;
 import com.yunseong.project.domain.ProjectDomainEventPublisher;
 import com.yunseong.project.domain.ProjectRepository;
-import com.yunseong.project.sagas.createweclass.CreateWeClassSagaState;
+import com.yunseong.project.sagas.startproject.StartProjectSagaState;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import io.eventuate.tram.sagas.orchestration.SagaManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class ProjectService {
     private ProjectDomainEventPublisher projectDomainEventPublisher;
 
     @Autowired
-    private SagaManager<CreateWeClassSagaState> createWeClassSagaSagaManager;
+    private SagaManager<StartProjectSagaState> createWeClassSagaSagaManager;
 
     public ResultWithDomainEvents<Project, ProjectEvent> createProject(CreateProjectRequest request) {
         ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getTeamId(), request.getWeClassId(), request.getSubject(), request.getContent());
@@ -37,7 +37,7 @@ public class ProjectService {
     }
 
     public boolean createWeClass(long projectId) {
-        CreateWeClassSagaState data = new CreateWeClassSagaState(projectId);
+        StartProjectSagaState data = new StartProjectSagaState(projectId);
         this.createWeClassSagaSagaManager.create(data, Project.class, projectId);
 
         if(data.getWeClassId() != 0) {
@@ -53,12 +53,15 @@ public class ProjectService {
         return project;
     }
 
+    public void startProject(long projectId) {
+        updateProject(projectId, Project::start);
+    }
+
     public void rejectProject(long projectId) {
-        updateProject(projectId, Project::rejected);
+        updateProject(projectId, Project::reject);
     }
 
     public void cancelProject(long projectId) {
-
     }
 
     private Project findProject(long projectId) {

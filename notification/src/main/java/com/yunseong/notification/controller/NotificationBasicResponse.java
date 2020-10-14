@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class NotificationResponse {
+public class NotificationBasicResponse {
 
+    private long notificationId;
     private String subject;
-    private String content;
+    private boolean isRead;
 }

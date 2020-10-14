@@ -3,9 +3,9 @@ package com.yunseong.notification.messagehandlers;
 import com.yunseong.common.AES256Util;
 import com.yunseong.member.api.controller.events.MemberSignedEvent;
 import com.yunseong.notification.service.NotificationService;
-import com.yunseong.project.api.event.TeamAuthorizeVoteRequested;
+import com.yunseong.project.api.event.TeamAuthorizeVoteRequestedEvent;
 import com.yunseong.project.api.event.TeamJoinedRequestEvent;
-import com.yunseong.project.api.event.TeamMember;
+import com.yunseong.project.api.event.TeamMemberDetail;
 import com.yunseong.project.api.event.TeamQuitEvent;
 import io.eventuate.tram.events.subscriber.DomainEventEnvelope;
 import io.eventuate.tram.events.subscriber.DomainEventHandlers;
@@ -25,7 +25,7 @@ public class NotificationServiceEventConsumer {
                 .onEvent(MemberSignedEvent.class, this::createNotificationOfNewMember)
                 .andForAggregateType("com.yunseong.team.domain.Team")
                 .onEvent(TeamJoinedRequestEvent.class, this::createNotificationOfNewTeamMember)
-                .onEvent(TeamAuthorizeVoteRequested.class, this::createNotificationTeamAuthorizeRequest)
+                .onEvent(TeamAuthorizeVoteRequestedEvent.class, this::createNotificationTeamAuthorizeRequest)
                 .onEvent(TeamQuitEvent.class, this::createNotificationTeamQuit)
                 .build();
     }
@@ -40,8 +40,8 @@ public class NotificationServiceEventConsumer {
                 this.notificationService.createNotification(m.getUsername(), "[" + event.getEvent().getProjectId() + "]프로젝트 알림", "신규회원이 가입하였습니다 !"));
     }
 
-    private void createNotificationTeamAuthorizeRequest(DomainEventEnvelope<TeamAuthorizeVoteRequested> event) {
-        for (TeamMember teamMember : event.getEvent().getTeamMembers()) {
+    private void createNotificationTeamAuthorizeRequest(DomainEventEnvelope<TeamAuthorizeVoteRequestedEvent> event) {
+        for (TeamMemberDetail teamMember : event.getEvent().getTeamMembers()) {
             try {
                 this.notificationService.createNotification(teamMember.getUsername(), "[" + event.getEvent().getProjectId() + "]프로젝트 알림", aes256Util.encrypt(event.getAggregateId() + "(AND)" + teamMember.getUsername()));
             } catch (Exception e) {

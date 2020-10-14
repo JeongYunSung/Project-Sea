@@ -2,8 +2,9 @@ apply plugin: 'org.springframework.boot'
 
 dependencies {
     implementation project(':common')
-    implementation project(':project-api')
     implementation project(':team-api')
+    implementation project(':project-api')
+    implementation project(':weclass-api')
     implementation 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

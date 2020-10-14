@@ -6,12 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -20,15 +18,16 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    @GetMapping
-    public ResponseEntity<Page<NotificationResponse>> findAll(@PageableDefault Pageable pageable) {
-        Page<Notification> page = this.notificationService.findAll(pageable);
-        return ResponseEntity.ok(page.map(e -> new NotificationResponse(e.getSubject(), e.getContent())));
+    @GetMapping("/search")
+    public ResponseEntity<PagedModel> findByUsername(@RequestBody String username, @PageableDefault Pageable pageable) {
+        Page<NotificationBasicResponse> page = this.notificationService.findByUsername(username, pageable).map(n -> new NotificationBasicResponse(n.getId(), n.getSubject(), n.isRead()));
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
+        return ResponseEntity.ok(PagedModel.of(page.getContent(), pageMetadata));
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity<NotificationResponse> findById(@PathVariable String username) {
-        Notification notification = this.notificationService.findByUsername(username);
-        return ResponseEntity.ok(new NotificationResponse(notification.getSubject(), notification.getContent()));
+    @GetMapping("/{id}")
+    public ResponseEntity<NotificationDetailResponse> findById(@PathVariable long id) {
+        Notification notification = this.notificationService.findById(id);
+        return ResponseEntity.ok(new NotificationDetailResponse(notification.getSubject(), notification.getContent()));
     }
 }

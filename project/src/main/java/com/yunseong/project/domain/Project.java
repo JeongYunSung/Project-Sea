@@ -59,10 +59,19 @@ public class Project {
         this.weClassId = weClassId;
     }
 
-    public List<ProjectEvent> rejected() {
+    public List<ProjectEvent> reject() {
         switch(this.projectState) {
             case CLOSED:
+                this.projectState = ProjectState.REJECTED;
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
 
+    public List<ProjectEvent> start() {
+        switch(this.projectState) {
+            case CLOSED:
+                this.projectState = ProjectState.STARTED;
             default:
                 throw new UnsupportedStateTransitionException(this.projectState);
         }

@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static com.yunseong.team.domain.TeamState.APPROVAL_PENDING;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -42,76 +41,93 @@ public class Team {
     @LastModifiedDate
     private LocalDateTime updatedTime;
 
-    @ElementCollection
-    @CollectionTable(name = "team_members",
-            uniqueConstraints = @UniqueConstraint(columnNames = "username"))
+    @OneToMany
     private List<TeamMember> teamMembers = new ArrayList<>();
 
     public Team(String username, int minSize, int maxSize) {
         this.minSize = minSize;
         this.maxSize = maxSize;
         this.teamState = TeamState.NONE;
-        this.teamMembers.add(new TeamMember(username, TeamPermission.LEADER));
+        this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.LEADER)));
     }
 
     public List<TeamEvent> join(String username) {
         switch (teamState) {
             case RECRUIT_PENDING:
-                this.teamMembers.add(new TeamMember(username, TeamPermission.USER));
+                this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.USER)));
                 if(this.getSize() == maxSize) {
-                    this.teamState = APPROVAL_PENDING;
-                    return Collections.singletonList(new TeamAuthorizeVoteRequested(this.projectId, this.teamMembers));
+                    this.teamState = TeamState.VOTE_PENDING;
+                    return Collections.singletonList(new TeamAuthorizeVoteRequestedEvent(this.projectId, this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
                 }
-                return Collections.singletonList(new TeamJoinedRequestEvent(this.projectId, this.teamMembers));
+                return Collections.singletonList(new TeamJoinedRequestEvent(this.projectId, this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
         }
     }
 
-    public List<TeamEvent> quit(String username) {
-        switch(this.teamState) {
-            case RECRUIT_PENDING:
-                this.changeState(username, TeamMemberState.QUIT);
-                return Collections.singletonList(new TeamQuitEvent(this.projectId, username));
-            default:
-                throw new UnsupportedStateTransitionException(this.teamState);
-        }
-    }
-
-    private boolean changeState(String username, TeamMemberState teamMemberState) {
+    private boolean voted() {
+        int count = 0;
         for (TeamMember teamMember : this.teamMembers) {
-            if(teamMember.getUsername().equals(username)) {
-                teamMember.setTeamMemberState(teamMemberState);
+            if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.APPROVED) count++;
+            else if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.REJECTED) count--;
+        }
+        if(this.minSize <= count && this.maxSize >= count) return true;
+        return false;
+    }
+
+    public void approveTeam() throws TeamRejectException {
+        switch (this.teamState) {
+            case VOTED:
+                if(!voted()) {
+                    throw new TeamRejectException("해당 프로젝트의 과반수가 거절하여 해당 프로젝트는 취소됩니다.");
+                }
+                this.teamState = TeamState.APPROVED;
+            default:
+                throw new UnsupportedStateTransitionException(this.teamState);
+        }
+    }
+
+    public void rejectTeam() {
+        switch (this.teamState) {
+            case VOTED:
+                this.teamState = TeamState.REJECTED;
+        }
+    }
+
+    private boolean changeMemberState(String username, TeamMemberState teamMemberState) {
+        for (TeamMember teamMember : this.teamMembers) {
+            if(teamMember.getTeamMemberDetail().getUsername().equals(username)) {
+                teamMember.getTeamMemberDetail().setTeamMemberState(teamMemberState);
                 return true;
             }
         }
         return false;
     }
 
-    private boolean voted() {
-        int count = 0;
-        for (TeamMember teamMember : this.teamMembers) {
-            if(teamMember.getTeamMemberState() == TeamMemberState.APPROVED) count++;
-            else if(teamMember.getTeamMemberState() == TeamMemberState.REJECTED) count--;
+    public List<TeamEvent> memberQuit(String username) {
+        switch(this.teamState) {
+            case RECRUIT_PENDING:
+                this.changeMemberState(username, TeamMemberState.QUIT);
+                return Collections.singletonList(new TeamQuitEvent(this.projectId, username));
+            default:
+                throw new UnsupportedStateTransitionException(this.teamState);
         }
-        if(this.minSize <= count && this.maxSize >= count) return true;
-        return false;
     }
 
-    public List<TeamEvent> approve(String username) {
+    public List<TeamEvent> memberApprove(String username) {
         switch(this.teamState) {
-            case APPROVAL_PENDING:
-                this.changeState(username, TeamMemberState.APPROVED);
+            case VOTE_PENDING:
+                this.changeMemberState(username, TeamMemberState.APPROVED);
                 return isAllVoted();
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
         }
     }
 
-    public List<TeamEvent> reject(String username) {
+    public List<TeamEvent> memberReject(String username) {
         switch(this.teamState) {
-            case APPROVAL_PENDING:
-                this.changeState(username, TeamMemberState.REJECTED);
+            case VOTE_PENDING:
+                this.changeMemberState(username, TeamMemberState.REJECTED);
                 return isAllVoted();
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
@@ -120,7 +136,7 @@ public class Team {
 
     public boolean isUser(String username) {
         for (TeamMember teamMember : this.teamMembers) {
-            if(teamMember.getUsername().equals(username)) return true;
+            if(teamMember.getTeamMemberDetail().getUsername().equals(username)) return true;
         }
         return false;
     }
@@ -133,15 +149,16 @@ public class Team {
 
     private List<TeamEvent> isAllVoted() {
         for(TeamMember teamMember : this.teamMembers) {
-            if(teamMember.getTeamMemberState() == TeamMemberState.JOIN_PENDING) return Collections.emptyList();
+            if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.JOIN_PENDING) return Collections.emptyList();
         }
+        this.teamState = TeamState.VOTED;
         return Collections.singletonList(new TeamVotedEvent(this.projectId));
     }
 
     private int getSize() {
         int size = 0;
         for(TeamMember teamMember : this.teamMembers) {
-            if(teamMember.getTeamMemberState() == TeamMemberState.JOINED) size++;
+            if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.JOINED) size++;
         }
         return size;
     }

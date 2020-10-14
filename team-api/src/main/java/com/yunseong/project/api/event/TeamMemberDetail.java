@@ -12,7 +12,7 @@ import javax.persistence.Enumerated;
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class TeamMember {
+public class TeamMemberDetail {
 
     private String username;
     @Enumerated(EnumType.STRING)
@@ -20,7 +20,7 @@ public class TeamMember {
     @Enumerated(EnumType.STRING)
     private TeamMemberState teamMemberState;
 
-    public TeamMember(String username, TeamPermission teamPermission) {
+    public TeamMemberDetail(String username, TeamPermission teamPermission) {
         this.username = username;
         this.teamPermission = teamPermission;
         this.teamMemberState = TeamMemberState.JOIN_PENDING;

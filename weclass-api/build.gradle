@@ -1,5 +1,6 @@
 dependencies {
     implementation "io.eventuate.tram.core:eventuate-tram-spring-events:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
