@@ -26,8 +26,9 @@ public class ProjectController {
         return new ResponseEntity<>(new CreateProjectResponse(project.result.getId()), HttpStatus.CREATED);
     }
 
-    @GetMapping
-    public ResponseEntity<ProjectResponse> findProject(@RequestBody String username) {
-        return null;
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<ProjectResponse> findProject(@PathVariable Long id) {
+        Project project = this.projectService.findProject(id);
+        return ResponseEntity.ok(new ProjectResponse(project.getId(), project.getSubject(), project.getContent(), project.getTeamId(), project.getWeClassId(), project.getProjectTheme(), project.getProjectState()));
     }
 }

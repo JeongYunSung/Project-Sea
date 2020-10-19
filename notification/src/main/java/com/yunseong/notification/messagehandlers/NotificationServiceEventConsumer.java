@@ -43,7 +43,7 @@ public class NotificationServiceEventConsumer {
     private void createNotificationTeamAuthorizeRequest(DomainEventEnvelope<TeamAuthorizeVoteRequestedEvent> event) {
         for (TeamMemberDetail teamMember : event.getEvent().getTeamMembers()) {
             try {
-                this.notificationService.createNotification(teamMember.getUsername(), "[" + event.getEvent().getProjectId() + "]프로젝트 알림", aes256Util.encrypt(event.getAggregateId() + "(AND)" + teamMember.getUsername()));
+                this.notificationService.createNotification(teamMember.getUsername(), "[" + event.getEvent().getProjectId() + "]프로젝트 알림", aes256Util.encrypt(event.getAggregateId() + "SPLIT" + teamMember.getUsername()));
             } catch (Exception e) {
                 e.printStackTrace();
             }

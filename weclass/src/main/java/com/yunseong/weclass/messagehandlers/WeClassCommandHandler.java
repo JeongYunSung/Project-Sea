@@ -11,6 +11,7 @@ import io.eventuate.tram.messaging.common.Message;
 import io.eventuate.tram.sagas.participant.SagaCommandHandlersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static io.eventuate.tram.commands.consumer.CommandHandlerReplyBuilder.withFailure;
 import static io.eventuate.tram.sagas.participant.SagaReplyMessageBuilder.withLock;
 
 public class WeClassCommandHandler {
@@ -26,8 +27,12 @@ public class WeClassCommandHandler {
     }
 
     private Message createWeClass(CommandMessage<CreateWeClassCommand> commandMessage) {
-        WeClass weClass = this.weClassService.createWeClass(commandMessage.getCommand().getProjectId());
-        CreateWeClassReply reply = new CreateWeClassReply(weClass.getId());
-        return withLock(WeClass.class, 5).withSuccess(reply);
+        try {
+            WeClass weClass = this.weClassService.createWeClass(commandMessage.getCommand().getProjectId());
+            CreateWeClassReply reply = new CreateWeClassReply(weClass.getId());
+            return withLock(WeClass.class, 5).withSuccess(reply);
+        } catch (Exception e) {
+            return withFailure();
+        }
     }
 }

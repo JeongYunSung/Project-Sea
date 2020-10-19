@@ -15,6 +15,7 @@ import io.eventuate.tram.messaging.consumer.MessageConsumer;
 import io.eventuate.tram.sagas.common.SagaLockManager;
 import io.eventuate.tram.sagas.orchestration.*;
 import io.eventuate.tram.sagas.spring.common.EventuateTramSagaCommonConfiguration;
+import io.eventuate.tram.sagas.spring.orchestration.SagaOrchestratorConfiguration;
 import io.eventuate.tram.spring.commands.producer.TramCommandProducerConfiguration;
 import io.eventuate.tram.spring.events.publisher.TramEventsPublisherConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -22,21 +23,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import({TramEventsPublisherConfiguration.class, ProjectServiceMessageHandlersConfiguration.class, TramCommandProducerConfiguration.class, EventuateTramSagaCommonConfiguration.class})
+@Import({TramEventsPublisherConfiguration.class, ProjectServiceMessageHandlersConfiguration.class, TramCommandProducerConfiguration.class, EventuateTramSagaCommonConfiguration.class, SagaOrchestratorConfiguration.class})
 public class ProjectServiceConfiguration {
-
-    @Bean
-    public SagaInstanceRepository sagaInstanceRepository(EventuateJdbcStatementExecutor eventuateJdbcStatementExecutor,
-                                                         IdGenerator idGenerator,
-                                                         EventuateSchema eventuateSchema) {
-        return new SagaInstanceRepositoryJdbc(eventuateJdbcStatementExecutor, idGenerator, eventuateSchema);
-    }
-
-
-    @Bean
-    public SagaCommandProducer sagaCommandProducer(CommandProducer commandProducer) {
-        return new SagaCommandProducer(commandProducer);
-    }
 
     @Bean
     public ProjectDomainEventPublisher projectDomainEventPublisher(DomainEventPublisher domainEventPublisher) {

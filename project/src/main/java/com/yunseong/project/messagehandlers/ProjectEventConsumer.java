@@ -15,16 +15,11 @@ public class ProjectEventConsumer {
     public DomainEventHandlers domainEventHandlers() {
         return DomainEventHandlersBuilder
                 .forAggregateType("com.yunseong.team.domain.Team")
-                .onEvent(TeamVotedEvent.class, this::createWeClassSaga)
+                .onEvent(TeamVotedEvent.class, this::startProjectSaga)
                 .build();
     }
 
-    private void createWeClassSaga(DomainEventEnvelope<TeamVotedEvent> event) {
-        for(int i=0;i<3;i++) {
-            if(this.projectService.createWeClass(event.getEvent().getProjectId())) {
-                return;
-            }
-        }
-        this.projectService.cancelProject(event.getEvent().getProjectId()); // 나중에 CancelSaga적용예정
+    private void startProjectSaga(DomainEventEnvelope<TeamVotedEvent> event) {
+        this.projectService.startProject(event.getEvent().getProjectId());
     }
 }

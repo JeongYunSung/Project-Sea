@@ -3,6 +3,7 @@ package com.yunseong.team.controller;
 import com.yunseong.common.AES256Util;
 import com.yunseong.project.api.controller.TeamBasicResponse;
 import com.yunseong.project.api.controller.TeamDetailResponse;
+import com.yunseong.project.api.controller.TeamVoteRequest;
 import com.yunseong.project.api.event.TeamMemberDetail;
 import com.yunseong.team.domain.Team;
 import com.yunseong.team.domain.TeamMember;
@@ -31,30 +32,24 @@ public class TeamController {
     private AES256Util aes256Util;
 
     @GetMapping(value = "/search")
-    public ResponseEntity<PagedModel> findTeamByUsername(@RequestBody String username, @PageableDefault Pageable pageable) {
-        Page<TeamBasicResponse> page = this.teamService.findTeamByUsername(username, pageable).map(TeamBasicResponse::new);
+    public ResponseEntity<PagedModel> findTeamByUsername(@ModelAttribute TeamSearchCondition teamSearchCondition, @PageableDefault Pageable pageable) {
+        Page<TeamBasicResponse> page = this.teamService.findTeamByUsername(teamSearchCondition.getUsername(), pageable).map(TeamBasicResponse::new);
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
 
         return ResponseEntity.ok(PagedModel.of(page.getContent(), pageMetadata));
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<TeamDetailResponse> findTeamByProjectId(@PathVariable Long id) {
-        Team team = this.teamService.findTeamMembersByProjectId(id);
-        return ResponseEntity.ok(new TeamDetailResponse(team.getMinSize(), team.getMaxSize(), team.getTeamMembers().stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
-    }
-
-    @PutMapping(value = "/authorize/accept")
-    public ResponseEntity authorizeAcceptTeam(@RequestBody String token) throws GeneralSecurityException, UnsupportedEncodingException {
-        String[] decrypt = aes256Util.decrypt(token).split("(AND)");
+    @PutMapping(value = "/join/accept")
+    public ResponseEntity authorizeAcceptTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
+        String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
         if(decrypt.length != 2) return ResponseEntity.badRequest().body("잘못된 토큰값입니다.");
         this.teamService.accept(Long.parseLong(decrypt[0]), decrypt[1]);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/authorize/reject")
-    public ResponseEntity authorizeRejectTeam(@RequestBody String token) throws GeneralSecurityException, UnsupportedEncodingException {
-        String[] decrypt = aes256Util.decrypt(token).split("(AND)");
+    @PutMapping(value = "/join/reject")
+    public ResponseEntity authorizeRejectTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
+        String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
         if(decrypt.length != 2) return ResponseEntity.badRequest().body("잘못된 토큰값입니다.");
         this.teamService.reject(Long.parseLong(decrypt[0]), decrypt[1]);
         return ResponseEntity.noContent().build();
@@ -77,9 +72,9 @@ public class TeamController {
         return ResponseEntity.ok(new TeamJoinResponse(team.getId()));
     }
 
-    @GetMapping(value = "/join/{id}")
-    public ResponseEntity<TeamMembersResponse> findTeamMembers(@PathVariable Long id) {
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<TeamDetailResponse> findTeamMembers(@PathVariable Long id) {
         Team team = this.teamService.findTeamMembersByTeamId(id);
-        return ResponseEntity.ok(new TeamMembersResponse(team.getTeamMembers().stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
+        return ResponseEntity.ok(new TeamDetailResponse(team.getMinSize(), team.getMaxSize(), team.getTeamState(), team.getTeamMembers().stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
     }
 }

@@ -1,7 +1,9 @@
 package com.yunseong.project.messagehandlers;
 
 import com.yunseong.project.api.ProjectServiceChannels;
+import com.yunseong.project.sagaparticipants.RegisterWeClassCommand;
 import com.yunseong.project.sagaparticipants.RejectProjectCommand;
+import com.yunseong.project.sagaparticipants.StartProjectCommand;
 import com.yunseong.project.service.ProjectService;
 import io.eventuate.tram.commands.consumer.CommandHandlers;
 import io.eventuate.tram.commands.consumer.CommandMessage;
@@ -20,7 +22,22 @@ public class ProjectCommandHandlers {
         return SagaCommandHandlersBuilder
                 .fromChannel(ProjectServiceChannels.projectServiceChannel)
                 .onMessage(RejectProjectCommand.class, this::rejectProject)
+                .onMessage(RegisterWeClassCommand.class, this::registerWeClass)
+                .onMessage(StartProjectCommand.class, this::startProject)
                 .build();
+    }
+
+    public Message startProject(CommandMessage<StartProjectCommand> cm) {
+        long projectId = cm.getCommand().getProjectId();
+        this.projectService.approveProject(projectId);
+        return withSuccess();
+    }
+
+    public Message registerWeClass(CommandMessage<RegisterWeClassCommand> cm) {
+        long projectId = cm.getCommand().getProjectId();
+        long weClassId = cm.getCommand().getWeClassId();
+        this.projectService.registerWeClass(projectId, weClassId);
+        return withSuccess();
     }
 
     public Message rejectProject(CommandMessage<RejectProjectCommand> cm) {

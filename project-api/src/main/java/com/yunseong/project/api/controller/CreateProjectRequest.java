@@ -1,16 +1,16 @@
 package com.yunseong.project.api.controller;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import com.yunseong.project.api.event.ProjectTheme;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
 public class CreateProjectRequest {
 
-    private long weClassId;
     private long teamId;
     private String subject;
     private String content;
+    private ProjectTheme projectTheme;
 }

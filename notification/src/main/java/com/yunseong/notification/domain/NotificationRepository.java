@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    @Query("select n from Notification where n.username = :username")
+    @Query("select n from Notification n where n.username = :username")
     Page<Notification> findByUsername(String username, Pageable pageable);
 }

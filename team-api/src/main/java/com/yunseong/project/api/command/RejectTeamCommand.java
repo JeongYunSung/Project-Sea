@@ -1,7 +1,15 @@
 package com.yunseong.project.api.command;
 
-public class RejectTeamCommand extends TeamCommand {
-    public RejectTeamCommand(long projectId) {
-        super(projectId);
-    }
+import io.eventuate.tram.commands.common.Command;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
+@Getter
+public class RejectTeamCommand implements Command {
+
+    private long projectId;
 }

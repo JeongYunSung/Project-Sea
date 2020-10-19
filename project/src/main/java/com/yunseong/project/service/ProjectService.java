@@ -30,22 +30,18 @@ public class ProjectService {
     private SagaManager<StartProjectSagaState> createWeClassSagaSagaManager;
 
     public ResultWithDomainEvents<Project, ProjectEvent> createProject(CreateProjectRequest request) {
-        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getTeamId(), request.getWeClassId(), request.getSubject(), request.getContent());
+        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getTeamId(), request.getSubject(), request.getContent(), request.getProjectTheme());
         this.projectRepository.save(rwe.result);
         this.projectDomainEventPublisher.publish(rwe.result, rwe.events);
         return rwe;
     }
 
-    public boolean createWeClass(long projectId) {
+    public void startProject(long projectId) {
+        closeProject(projectId);
         StartProjectSagaState data = new StartProjectSagaState(projectId);
         this.createWeClassSagaSagaManager.create(data, Project.class, projectId);
-
-        if(data.getWeClassId() != 0) {
-            this.findProject(projectId).changeWeClassId(data.getWeClassId());
-            return true;
-        }
-        return false;
     }
+
 
     private Project updateProject(long projectId, Function<Project, List<ProjectEvent>> func) {
         Project project = findProject(projectId);
@@ -53,7 +49,11 @@ public class ProjectService {
         return project;
     }
 
-    public void startProject(long projectId) {
+    private void closeProject(long projectId) {
+        updateProject(projectId, Project::close);
+    }
+
+    public void approveProject(long projectId) {
         updateProject(projectId, Project::start);
     }
 
@@ -61,10 +61,16 @@ public class ProjectService {
         updateProject(projectId, Project::reject);
     }
 
+    public void registerWeClass(long projectId, long weClassId) {
+        Project project = findProject(projectId);
+        this.projectDomainEventPublisher.publish(project, project.register(weClassId));
+    }
+
     public void cancelProject(long projectId) {
     }
 
-    private Project findProject(long projectId) {
-        return this.projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지않습니다"));
+    public Project findProject(long projectId) {
+        Project project = this.projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지않습니다"));
+        return project;
     }
 }

@@ -53,7 +53,9 @@ public class TeamService {
     }
 
     public Team joinTeam(long teamId, String username) throws EntityNotFoundException {
-        return updateTeam(teamId, username, Team::join);
+        Team team = getTeamByTeamId(teamId);
+        this.teamDomainEventPublisher.publish(team, team.join(username));
+        return team;
     }
 
     public void approveTeam(long projectId) throws TeamRejectException {
@@ -68,12 +70,7 @@ public class TeamService {
 
     @Transactional(readOnly = true)
     public Team findTeamMembersByTeamId(long teamId) {
-        return getTeamByTeamId(teamId);
-    }
-
-    @Transactional(readOnly = true)
-    public Team findTeamMembersByProjectId(long projectId) {
-        return this.teamRepository.findFetchByProjectId(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));
+        return this.teamRepository.findFetchByTeamId(teamId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));
     }
 
     @Transactional(readOnly = true)

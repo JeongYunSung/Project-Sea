@@ -5,6 +5,7 @@ import com.yunseong.project.api.event.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -41,7 +42,7 @@ public class Team {
     @LastModifiedDate
     private LocalDateTime updatedTime;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL)
     private List<TeamMember> teamMembers = new ArrayList<>();
 
     public Team(String username, int minSize, int maxSize) {
@@ -54,8 +55,11 @@ public class Team {
     public List<TeamEvent> join(String username) {
         switch (teamState) {
             case RECRUIT_PENDING:
+                if(this.teamMembers.stream().filter(tm -> tm.getTeamMemberDetail().getUsername().equals(username)).count() >= 1) {
+                    throw new TeamMemberReduplicationException(username + "유저는 이미 팀내에 존재합니다");
+                }
                 this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.USER)));
-                if(this.getSize() == maxSize) {
+                if(this.getSize() == this.maxSize) {
                     this.teamState = TeamState.VOTE_PENDING;
                     return Collections.singletonList(new TeamAuthorizeVoteRequestedEvent(this.projectId, this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
                 }
@@ -82,6 +86,7 @@ public class Team {
                     throw new TeamRejectException("해당 프로젝트의 과반수가 거절하여 해당 프로젝트는 취소됩니다.");
                 }
                 this.teamState = TeamState.APPROVED;
+                return;
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
         }
@@ -90,14 +95,23 @@ public class Team {
     public void rejectTeam() {
         switch (this.teamState) {
             case VOTED:
+                if(!voted()) {
+                    throw new TeamRejectException("해당 프로젝트의 과반수가 거절하여 해당 프로젝트는 취소됩니다.");
+                }
                 this.teamState = TeamState.REJECTED;
+                return;
+            default:
+                throw new UnsupportedStateTransitionException(this.teamState);
         }
     }
 
     private boolean changeMemberState(String username, TeamMemberState teamMemberState) {
         for (TeamMember teamMember : this.teamMembers) {
-            if(teamMember.getTeamMemberDetail().getUsername().equals(username)) {
-                teamMember.getTeamMemberDetail().setTeamMemberState(teamMemberState);
+            TeamMemberDetail teamMemberDetail = teamMember.getTeamMemberDetail();
+            if(teamMemberDetail.getUsername().equals(username)) {
+                if(teamMemberDetail.getTeamMemberState() != TeamMemberState.JOIN_PENDING)
+                    return false;
+                teamMemberDetail.setTeamMemberState(teamMemberState);
                 return true;
             }
         }
@@ -117,7 +131,8 @@ public class Team {
     public List<TeamEvent> memberApprove(String username) {
         switch(this.teamState) {
             case VOTE_PENDING:
-                this.changeMemberState(username, TeamMemberState.APPROVED);
+                if(!this.changeMemberState(username, TeamMemberState.APPROVED))
+                    throw new TeamMemberVotedException("이미 투표를 진행하였습니다.");
                 return isAllVoted();
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
@@ -127,7 +142,8 @@ public class Team {
     public List<TeamEvent> memberReject(String username) {
         switch(this.teamState) {
             case VOTE_PENDING:
-                this.changeMemberState(username, TeamMemberState.REJECTED);
+                if(!this.changeMemberState(username, TeamMemberState.REJECTED))
+                    throw new TeamMemberVotedException("이미 투표를 진행하였습니다.");
                 return isAllVoted();
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
@@ -158,7 +174,7 @@ public class Team {
     private int getSize() {
         int size = 0;
         for(TeamMember teamMember : this.teamMembers) {
-            if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.JOINED) size++;
+            if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.JOIN_PENDING) size++;
         }
         return size;
     }

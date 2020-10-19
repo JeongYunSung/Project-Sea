@@ -7,13 +7,14 @@ dependencies {
     implementation project(':weclass-api')
     implementation 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-spring-events:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-spring-jdbc-kafka:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-aggregate-domain-events:${eventuateTramVersion}"
-    implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
     implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-participant:${eventuateTramSagasVersion}"
+    implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-orchestration:${eventuateTramSagasVersion}"
     implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-orchestration-simple-dsl:${eventuateTramSagasVersion}"
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -21,4 +22,6 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "io.eventuate.tram.sagas:eventuate-tram-sagas-testing-support:${eventuateTramSagasVersion}"
 }

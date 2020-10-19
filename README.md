@@ -11,10 +11,10 @@
 현재 상황
 
 - Notification Service : 특정 이벤트에 대해 알림을 발생 및 읽기 구현
-- Member Service : stateless와 MSA환경을 위해 OAuth2를 이용한 가입 및 로그인 구현 ( password, refresh_token 방식 ) 추 후 이메일이증부분 추가 예정
-- Project Service : 프로젝트 생성, 위클래스 구현중 ( 사가패턴 진행중 ), 프로젝트 취소, 프로젝트 거절 등 구현중
-- Team Service : 팀 생성, 입장, 투표 시스템 구현
-- WeClass Service : 도메인객체만 구현
+- Member Service : stateless와 MSA환경을 위해 OAuth2를 이용한 가입 및 로그인 구현 ( password, refresh_token 방식 ) 이메일보내기, 프로필 수정, 확인 추가 예정
+- Project Service : 프로젝트 생성, 프로젝트 시작(사가 패턴), 프로젝트 거절 구현, 프로젝트 취소(사가 패턴) 추가 예정
+- Team Service : 팀 생성, 입장, 투표, 탈퇴, 조회 등 구현
+- WeClass Service : 도메인객체와 커맨드핸들러구현 보고서로직 짜야함
 
 사용한 기술
 
