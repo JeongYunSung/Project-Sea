@@ -69,11 +69,10 @@ public class Team {
         }
     }
 
-    private boolean voted() {
+    public boolean voted() {
         int count = 0;
         for (TeamMember teamMember : this.teamMembers) {
             if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.APPROVED) count++;
-            else if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.REJECTED) count--;
         }
         if(this.minSize <= count && this.maxSize >= count) return true;
         return false;
@@ -83,9 +82,13 @@ public class Team {
         switch (this.teamState) {
             case VOTED:
                 if(!voted()) {
+                    this.teamState = TeamState.REJECTED;
                     throw new TeamRejectException("해당 프로젝트의 과반수가 거절하여 해당 프로젝트는 취소됩니다.");
                 }
                 this.teamState = TeamState.APPROVED;
+                for (TeamMember teamMember : this.teamMembers) {
+                    if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.APPROVED) teamMember.getTeamMemberDetail().setTeamMemberState(TeamMemberState.JOINED);
+                }
                 return;
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
@@ -95,10 +98,10 @@ public class Team {
     public void rejectTeam() {
         switch (this.teamState) {
             case VOTED:
-                if(!voted()) {
-                    throw new TeamRejectException("해당 프로젝트의 과반수가 거절하여 해당 프로젝트는 취소됩니다.");
-                }
                 this.teamState = TeamState.REJECTED;
+//                for (TeamMember teamMember : this.teamMembers) {
+//                    if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.JOINED) teamMember.getTeamMemberDetail().setTeamMemberState(TeamMemberState.REJECTED);
+//                }
                 return;
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);
@@ -158,9 +161,14 @@ public class Team {
     }
 
     public void setProject(long projectId) {
-        if(this.projectId == null)
-            this.teamState = TeamState.RECRUIT_PENDING;
-        this.projectId = projectId;
+        switch (this.teamState) {
+            case NONE:
+                this.teamState = TeamState.RECRUIT_PENDING;
+                this.projectId = projectId;
+                return;
+            default:
+                throw new UnsupportedStateTransitionException(this.teamState);
+        }
     }
 
     private List<TeamEvent> isAllVoted() {

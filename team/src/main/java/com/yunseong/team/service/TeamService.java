@@ -58,9 +58,14 @@ public class TeamService {
         return team;
     }
 
-    public void approveTeam(long projectId) throws TeamRejectException {
-        Team team = this.getTeamMembersByProjectId(projectId);
-        team.approveTeam();
+    public boolean approveTeam(long projectId) {
+        try {
+            Team team = this.getTeamMembersByProjectId(projectId);
+            team.approveTeam();
+            return true;
+        } catch(TeamRejectException e) {
+            return false;
+        }
     }
 
     public void rejectTeam(long projectId) {

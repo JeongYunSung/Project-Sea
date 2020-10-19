@@ -15,9 +15,9 @@ public class StartProjectSaga implements SimpleSaga<StartProjectSagaState> {
         this.sagaSagaDefinition =
                 step()
                     .withCompensation(projectService.reject, StartProjectSagaState::makeRejectProjectCommand)
-                    .withCompensation(teamProxyService.reject, StartProjectSagaState::makeRejectTeamCommand)
                 .step()
                     .invokeParticipant(teamProxyService.approve, StartProjectSagaState::makeApproveTeamCommand)
+                    .withCompensation(teamProxyService.reject, StartProjectSagaState::makeRejectTeamCommand)
                 .step()
                     .invokeParticipant(weClassProxyService.create, StartProjectSagaState::makeCreateWeClassCommand)
                     .onReply(CreateWeClassReply.class, StartProjectSagaState::handleCreateWeClassReply)

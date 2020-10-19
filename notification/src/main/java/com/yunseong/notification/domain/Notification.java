@@ -8,7 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -34,11 +34,11 @@ public class Notification {
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
-    private LocalDate createdDate;
+    private LocalDateTime createdDate;
 
     @Column(nullable = false)
     @LastModifiedDate
-    private LocalDate updatedDate;
+    private LocalDateTime updatedDate;
 
     public Notification(String username, String subject, String content) {
         this.username = username;

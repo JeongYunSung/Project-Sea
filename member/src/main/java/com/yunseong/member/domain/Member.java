@@ -10,7 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
@@ -33,10 +33,10 @@ public class Member {
     private Permission permission;
     @Column(nullable = false, updatable = false)
     @CreatedDate
-    private LocalDate createdDate;
+    private LocalDateTime createdDate;
     @Column(nullable = false)
     @LastModifiedDate
-    private LocalDate updatedDate;
+    private LocalDateTime updatedDate;
 
     public Member(String username, String password, String nickname) {
         this.username = username;
@@ -47,5 +47,9 @@ public class Member {
 
     public static ResultWithEvents<Member> create(String username, String password, String nickname) {
         return new ResultWithEvents<>(new Member(username, password, nickname), new MemberSignedEvent(username, nickname));
+    }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

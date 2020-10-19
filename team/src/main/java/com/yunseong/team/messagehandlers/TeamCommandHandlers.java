@@ -28,10 +28,9 @@ public class TeamCommandHandlers {
     }
 
     private Message approveTeam(CommandMessage<ApproveTeamCommand> commandMessage) {
-        try {
-            this.teamService.approveTeam(commandMessage.getCommand().getProjectId());
+        if(this.teamService.approveTeam(commandMessage.getCommand().getProjectId())) {
             return withSuccess();
-        } catch (TeamRejectException e) {
+        }else {
             return withFailure();
         }
     }
