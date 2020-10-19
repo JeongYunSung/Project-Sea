@@ -1,6 +1,0 @@
-spring:
-  mail:
-    host: smtp.naver.com
-    port: 465
-    username: 12123123
-    password: asdf

@@ -35,4 +35,4 @@ out/
 
 ### my ignore ###
 application-db.yml
-src/main/resources/application-mail.yml
+application-mail.yml
