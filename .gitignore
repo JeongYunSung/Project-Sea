@@ -1,8 +1,6 @@
 HELP.md
 .gradle
 build/
-application-db.yml
-application-mail.yml
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -34,3 +32,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### my ignore ###
+application-db.yml
+src/main/resources/application-mail.yml
