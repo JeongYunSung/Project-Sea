@@ -23,7 +23,7 @@ public class Member {
     @GeneratedValue
     private Long id;
     @Column(nullable = false, updatable = false)
-    private String username;
+    private String username; // 유저네임을 이메일로 받을예정
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)

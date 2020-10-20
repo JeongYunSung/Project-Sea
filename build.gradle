@@ -5,15 +5,18 @@ buildscript {
         springCloudVersion = 'Hoxton.SR8'
         eventuateTramVersion = '0.24.0.RELEASE'
         eventuateTramSagasVersion = "0.15.2.RELEASE"
+        querydslPluginVersion = "1.0.10"
     }
 
     repositories {
         mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
     }
 
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootversion}"
         classpath "io.spring.gradle:dependency-management-plugin:${springDependencyversion}"
+        classpath "gradle.plugin.com.ewerk.gradle.plugins:querydsl-plugin:${querydslPluginVersion}"
     }
 }
 

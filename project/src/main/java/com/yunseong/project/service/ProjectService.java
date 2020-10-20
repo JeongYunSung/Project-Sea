@@ -2,6 +2,7 @@ package com.yunseong.project.service;
 
 import com.yunseong.project.api.controller.CreateProjectRequest;
 import com.yunseong.project.api.event.ProjectEvent;
+import com.yunseong.project.controller.ProjectSearchCondition;
 import com.yunseong.project.domain.Project;
 import com.yunseong.project.domain.ProjectDomainEventPublisher;
 import com.yunseong.project.domain.ProjectRepository;
@@ -9,6 +10,8 @@ import com.yunseong.project.sagas.startproject.StartProjectSagaState;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import io.eventuate.tram.sagas.orchestration.SagaManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,11 @@ public class ProjectService {
         this.projectRepository.save(rwe.result);
         this.projectDomainEventPublisher.publish(rwe.result, rwe.events);
         return rwe;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Project> findBySearch(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
+        return this.projectRepository.findBySearch(projectSearchCondition, pageable);
     }
 
     public void startProject(long projectId) {

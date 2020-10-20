@@ -1,13 +1,16 @@
 apply plugin: 'org.springframework.boot'
+apply plugin: "com.ewerk.gradle.plugins.querydsl"
 
 dependencies {
     implementation project(':common')
     implementation project(':team-api')
     implementation project(':project-api')
     implementation project(':weclass-api')
+    implementation 'com.querydsl:querydsl-jpa'
     implementation 'org.mariadb.jdbc:mariadb-java-client'
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
     implementation "io.eventuate.tram.core:eventuate-tram-spring-events:${eventuateTramVersion}"
@@ -24,4 +27,23 @@ dependencies {
     }
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "io.eventuate.tram.sagas:eventuate-tram-sagas-testing-support:${eventuateTramSagasVersion}"
+}
+
+def queryDir = "$buildDir/generated/querydsl"
+
+querydsl {
+    jpa = true
+    querydslSourcesDir = queryDir
+}
+
+sourceSets {
+    main.java.srcDir queryDir
+}
+
+compileQuerydsl {
+    options.annotationProcessorPath = configurations.querydsl
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
 }
