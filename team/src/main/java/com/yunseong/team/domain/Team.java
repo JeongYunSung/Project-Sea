@@ -135,7 +135,14 @@ public class Team {
     public List<TeamEvent> memberQuit(String username) {
         switch(this.teamState) {
             case RECRUIT_PENDING:
-                this.changeMemberState(username, TeamMemberState.QUIT);
+                for(int i=0;i<this.teamMembers.size();i++) {
+                    TeamMemberDetail teamMemberDetail = teamMembers.get(i).getTeamMemberDetail();
+                    if(teamMemberDetail.getUsername().equals(username)) {
+                        if(teamMemberDetail.getTeamMemberState() != TeamMemberState.JOIN_PENDING)
+                            return Collections.emptyList();
+                        this.getTeamMembers().remove(teamMembers.get(i));
+                    }
+                }
                 return Collections.singletonList(new TeamQuitEvent(this.projectId, username));
             default:
                 throw new UnsupportedStateTransitionException(this.teamState);

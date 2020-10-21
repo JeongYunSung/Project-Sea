@@ -1,5 +1,6 @@
 package com.yunseong.weclass.controller;
 
+import com.yunseong.weclass.service.DifferentOwnerException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -23,6 +24,13 @@ public class WeClassControllerAdvice {
     public ResponseEntity handleEntityNotFoundException(EntityNotFoundException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
         errors.reject("notFound", exception.getMessage());
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(DifferentOwnerException.class)
+    public ResponseEntity handleDifferentOwnerException(DifferentOwnerException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.reject("differentOwner", exception.getMessage());
         return ResponseEntity.badRequest().body(errors);
     }
 }

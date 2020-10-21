@@ -3,12 +3,17 @@ package com.yunseong.weclass.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@EntityListeners(AuditingEntityListener.class)
 public class Report {
 
     @Id
@@ -20,15 +25,33 @@ public class Report {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "weclass_name")
     private WeClass weClass;
+    private boolean isDelete;
+
+    @CreatedDate
+    private LocalDateTime createdTime;
+    @LastModifiedDate
+    private LocalDateTime updatedTime;
 
     public Report(String writer, String subject, String content) {
         this.writer = writer;
         this.subject = subject;
         this.content = content;
+        this.isDelete = false;
+    }
+
+    public void changeSubejct(String subject) {
+        this.subject = subject;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
     }
 
     public void registerWeClass(WeClass weClass) {
         this.weClass = weClass;
-        weClass.getReports().add(this);
+    }
+
+    public void delete() {
+        this.isDelete = true;
     }
 }

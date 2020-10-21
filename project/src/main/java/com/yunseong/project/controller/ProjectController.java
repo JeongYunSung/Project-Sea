@@ -46,8 +46,8 @@ public class ProjectController {
     }
 
     @PutMapping(value = "/cancel/{id}")
-    public ResponseEntity<ProjectState> cancelProject(@PathVariable long id) {
+    public ResponseEntity<Long> cancelProject(@PathVariable long id) {
         Project project = this.projectService.cancel(id);
-        return ResponseEntity.ok(project.getProjectState());
+        return ResponseEntity.ok(project.getId());
     }
 }

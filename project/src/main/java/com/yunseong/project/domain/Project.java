@@ -31,7 +31,6 @@ public class Project {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
     private Long teamId;
 
     private Long weClassId;
@@ -49,16 +48,15 @@ public class Project {
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-    public Project(long teamId, String subject, String content, ProjectTheme projectTheme) {
-        this.teamId = teamId;
+    public Project(String subject, String content, ProjectTheme projectTheme) {
         this.subject = subject;
         this.content = content;
         this.projectTheme = projectTheme;
         this.projectState = ProjectState.POST_PENDING;
     }
 
-    public static ResultWithDomainEvents<Project, ProjectEvent> create(long teamId, String subject, String content, ProjectTheme projectTheme) {
-        return new ResultWithDomainEvents<>(new Project(teamId, subject, content, projectTheme), new ProjectCreatedEvent(new ProjectDetail(teamId, subject, content)));
+    public static ResultWithDomainEvents<Project, ProjectEvent> create(String subject, String content, ProjectTheme projectTheme) {
+        return new ResultWithDomainEvents<>(new Project(subject, content, projectTheme), new ProjectCreatedEvent(new ProjectDetail(subject, content)));
     }
 
     public List<ProjectEvent> cancel() {

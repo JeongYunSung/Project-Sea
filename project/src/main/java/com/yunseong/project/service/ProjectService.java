@@ -42,11 +42,11 @@ public class ProjectService {
     private SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager;
 
     public ResultWithDomainEvents<Project, ProjectEvent> createProject(CreateProjectRequest request) {
-        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getTeamId(), request.getSubject(), request.getContent(), request.getProjectTheme());
+        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getSubject(), request.getContent(), request.getProjectTheme());
         Project project = this.projectRepository.save(rwe.result);
         this.projectDomainEventPublisher.publish(rwe.result, rwe.events);
 
-        this.createProjectSagaSagaManager.create(new CreateProjectSagaState(project.getId(), request.getUsername(), request.getMinSize(), request.getMaxSize()));
+        this.createProjectSagaSagaManager.create(new CreateProjectSagaState(project.getId(), request.getUsername(), request.getMinSize(), request.getMaxSize()), Project.class, project.getId());
 
         return rwe;
     }

@@ -15,7 +15,7 @@
 - Member Service : stateless와 MSA환경을 위해 OAuth2를 이용한 가입 및 로그인 구현 ( password, refresh_token 방식 ) 이메일보내기, 프로필 수정, 확인 추가 예정
 - Project Service : 프로젝트 생성(사가), 프로젝트 시작(사가), 프로젝트 거절, 프로젝트 취소(사가), 프로젝트 변경(사가 추가예정)
 - Team Service : 팀 생성, 입장, 투표, 탈퇴, 조회 등 구현
-- WeClass Service : 위클래스 생성, 보고서 작성 구현
+- WeClass Service : 위클래스 생성, 보고서 작성, 확인, 수정, 삭제 구현
 
 사용한 기술
 

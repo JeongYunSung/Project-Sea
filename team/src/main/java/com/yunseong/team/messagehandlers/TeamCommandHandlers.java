@@ -1,5 +1,6 @@
 package com.yunseong.team.messagehandlers;
 
+import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.api.TeamServiceChannels;
 import com.yunseong.project.api.command.*;
 import com.yunseong.team.domain.Team;
@@ -42,8 +43,10 @@ public class TeamCommandHandlers {
     }
 
     private Message cancelTeam(CommandMessage<CancelTeamCommand> commandMessage) {
-        this.teamService.cancel(commandMessage.getCommand().getTeamId());
-        return withSuccess();
+        if(this.teamService.cancel(commandMessage.getCommand().getTeamId()))
+            return withSuccess();
+        else
+            return withFailure();
     }
 
     private Message approveTeam(CommandMessage<ApproveTeamCommand> commandMessage) {

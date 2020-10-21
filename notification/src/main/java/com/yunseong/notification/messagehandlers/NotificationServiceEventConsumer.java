@@ -57,6 +57,6 @@ public class NotificationServiceEventConsumer {
 
     private void sendNotification(String username, String subject, String content) {
         this.notificationService.createNotification(username, subject, content);
-        this.notificationService.sendMail(username, subject, content);
+//        this.notificationService.sendMail(username, subject, content);
     }
 }

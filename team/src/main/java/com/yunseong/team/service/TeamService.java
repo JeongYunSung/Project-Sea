@@ -1,5 +1,6 @@
 package com.yunseong.team.service;
 
+import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.api.event.TeamEvent;
 import com.yunseong.team.domain.Team;
 import com.yunseong.team.domain.TeamDomainEventPublisher;
@@ -58,9 +59,14 @@ public class TeamService {
         return team;
     }
 
-    public void cancel(long teamId) {
-        Team team = this.getTeamByTeamId(teamId);
-        team.cancel();
+    public boolean cancel(long teamId) {
+        try {
+            Team team = this.getTeamByTeamId(teamId);
+            team.cancel();
+            return true;
+        }catch (UnsupportedStateTransitionException e) {
+            return false;
+        }
     }
 
     public boolean approveTeam(long teamId) {

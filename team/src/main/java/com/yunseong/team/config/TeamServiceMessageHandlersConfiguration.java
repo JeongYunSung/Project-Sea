@@ -29,10 +29,10 @@ public class TeamServiceMessageHandlersConfiguration {
         return new TeamServiceEventConsumer();
     }
 
-    @Bean
-    public DomainEventDispatcher domainEventDispatcher(TeamServiceEventConsumer teamServiceEventConsumer, DomainEventDispatcherFactory domainEventDispatcherFactory) {
-        return domainEventDispatcherFactory.make("teamServiceEvents", teamServiceEventConsumer.domainEventHandlers());
-    }
+//    @Bean
+//    public DomainEventDispatcher domainEventDispatcher(TeamServiceEventConsumer teamServiceEventConsumer, DomainEventDispatcherFactory domainEventDispatcherFactory) {
+//        return domainEventDispatcherFactory.make("teamServiceEvents", teamServiceEventConsumer.domainEventHandlers());
+//    }
 
     @Bean
     public TeamCommandHandlers commandHandlers() {

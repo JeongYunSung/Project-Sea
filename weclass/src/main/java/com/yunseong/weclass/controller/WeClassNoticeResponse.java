@@ -1,4 +1,4 @@
-package com.yunseong.project.sagas.cancelproject;
+package com.yunseong.weclass.controller;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class CancelProjectSagaData {
+public class WeClassNoticeResponse {
 
-    private long projectId;
+    private String notice;
 }
