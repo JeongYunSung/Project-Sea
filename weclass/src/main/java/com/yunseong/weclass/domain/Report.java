@@ -14,13 +14,15 @@ public class Report {
     @Id
     @GeneratedValue
     private Long id;
+    private String writer;
     private String subject;
     private String content;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "weclass_name")
     private WeClass weClass;
 
-    public Report(String subject, String content) {
+    public Report(String writer, String subject, String content) {
+        this.writer = writer;
         this.subject = subject;
         this.content = content;
     }
