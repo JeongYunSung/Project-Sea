@@ -31,7 +31,7 @@ public class Team {
 
     private int maxSize;
 
-    private Long projectId;
+    private long projectId;
 
     @Enumerated(EnumType.STRING)
     private TeamState teamState;
@@ -45,10 +45,11 @@ public class Team {
     @OneToMany(cascade = CascadeType.ALL)
     private List<TeamMember> teamMembers = new ArrayList<>();
 
-    public Team(String username, int minSize, int maxSize) {
+    public Team(long projectId, String username, int minSize, int maxSize) {
+        this.projectId = projectId;
         this.minSize = minSize;
         this.maxSize = maxSize;
-        this.teamState = TeamState.NONE;
+        this.teamState = TeamState.RECRUIT_PENDING;
         this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.LEADER)));
     }
 
@@ -170,23 +171,23 @@ public class Team {
         return false;
     }
 
-    public void setProject(long projectId) {
-        switch (this.teamState) {
-            case NONE:
-                this.teamState = TeamState.RECRUIT_PENDING;
-                this.projectId = projectId;
-                return;
-            default:
-                throw new UnsupportedStateTransitionException(this.teamState);
-        }
-    }
+//    public void setProject(long projectId) {
+//        switch (this.teamState) {
+//            case NONE:
+//                this.teamState = TeamState.RECRUIT_PENDING;
+//                this.projectId = projectId;
+//                return;
+//            default:
+//                throw new UnsupportedStateTransitionException(this.teamState);
+//        }
+//    }
 
     private List<TeamEvent> isAllVoted() {
         for(TeamMember teamMember : this.teamMembers) {
             if(teamMember.getTeamMemberDetail().getTeamMemberState() == TeamMemberState.JOIN_PENDING) return Collections.emptyList();
         }
         this.teamState = TeamState.VOTED;
-        return Collections.singletonList(new TeamVotedEvent(this.projectId));
+        return Collections.singletonList(new TeamVotedEvent(this.projectId, this.id));
     }
 
     private int getSize() {

@@ -54,7 +54,7 @@ public class Project {
         this.subject = subject;
         this.content = content;
         this.projectTheme = projectTheme;
-        this.projectState = ProjectState.POSTED;
+        this.projectState = ProjectState.POST_PENDING;
     }
 
     public static ResultWithDomainEvents<Project, ProjectEvent> create(long teamId, String subject, String content, ProjectTheme projectTheme) {
@@ -71,9 +71,9 @@ public class Project {
         }
     }
 
-    public List<ProjectEvent> undoCancel() {
+    public List<ProjectEvent> undoCancelOrPosted() {
         switch (this.projectState) {
-            case CANCEL_PENDING:
+            case CANCEL_PENDING: case POST_PENDING:
                 this.projectState = ProjectState.POSTED;
                 return Collections.emptyList();
             default:
@@ -83,7 +83,7 @@ public class Project {
 
     public List<ProjectEvent> cancelled() {
         switch (this.projectState) {
-            case CANCEL_PENDING:
+            case CANCEL_PENDING: case POST_PENDING:
                 this.projectState = ProjectState.CANCELLED;
                 return Collections.emptyList();
             default:
@@ -121,7 +121,17 @@ public class Project {
         }
     }
 
-    public List<ProjectEvent> register(long weClassId) {
+    public List<ProjectEvent> registerTeam(long teamId) {
+        switch(this.projectState) {
+            case POST_PENDING:
+                this.teamId = teamId;
+                return Collections.emptyList();
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
+
+    public List<ProjectEvent> registerWeClass(long weClassId) {
         switch(this.projectState) {
             case CLOSED:
                 this.weClassId = weClassId;

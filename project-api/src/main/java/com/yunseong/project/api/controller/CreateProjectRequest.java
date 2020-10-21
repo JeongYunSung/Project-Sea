@@ -13,4 +13,8 @@ public class CreateProjectRequest {
     private String subject;
     private String content;
     private ProjectTheme projectTheme;
+
+    private String username;
+    private int minSize;
+    private int maxSize;
 }

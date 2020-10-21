@@ -18,8 +18,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class StartProjectSagaState {
 
     @NonNull
-    private Long projectId;
+    private long projectId;
     private Long weClassId;
+    @NonNull
+    private long teamId;
 
     @Override
     public boolean equals(Object o) {
@@ -36,11 +38,11 @@ public class StartProjectSagaState {
     }
 
     public RejectTeamCommand makeRejectTeamCommand() {
-        return new RejectTeamCommand(this.projectId);
+        return new RejectTeamCommand(this.teamId);
     }
 
     public ApproveTeamCommand makeApproveTeamCommand() {
-        return new ApproveTeamCommand(this.projectId);
+        return new ApproveTeamCommand(this.teamId);
     }
 
     public CreateWeClassCommand makeCreateWeClassCommand() {

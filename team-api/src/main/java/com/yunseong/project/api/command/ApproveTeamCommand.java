@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ApproveTeamCommand implements Command {
 
-    private long projectId;
+    private long teamId;
 }

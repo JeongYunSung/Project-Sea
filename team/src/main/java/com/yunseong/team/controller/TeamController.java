@@ -55,10 +55,10 @@ public class TeamController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping
-    public ResponseEntity<TeamCreateResponse> createTeam(@RequestBody TeamCreateRequest teamCreateRequest) {
-        return new ResponseEntity<>(new TeamCreateResponse(this.teamService.createTeam(teamCreateRequest.getUsername(), teamCreateRequest.getMinSize(), teamCreateRequest.getMaxSize()).getId()), HttpStatus.CREATED);
-    }
+//    @PostMapping
+//    public ResponseEntity<TeamCreateResponse> createTeam(@RequestBody TeamCreateRequest teamCreateRequest) {
+//        return new ResponseEntity<>(new TeamCreateResponse(this.teamService.createTeam(teamCreateRequest.getUsername(), teamCreateRequest.getMinSize(), teamCreateRequest.getMaxSize()).getId()), HttpStatus.CREATED);
+//    }
 
     @PutMapping(value = "/quit/{id}")
     public ResponseEntity<TeamJoinResponse> quitTeam(@PathVariable Long id, @RequestBody TeamUpdateRequest teamUpdateRequest) {

@@ -24,13 +24,13 @@ public class TeamService {
     @Autowired
     private TeamDomainEventPublisher teamDomainEventPublisher;
 
-    public Team createTeam(String username, int minSize, int maxSize) {
-        return this.teamRepository.save(new Team(username, minSize, maxSize));
+    public Team createTeam(long projectId, String username, int minSize, int maxSize) {
+        return this.teamRepository.save(new Team(projectId, username, minSize, maxSize));
     }
 
-    public void setProject(long teamId, long projectId) {
-        getTeamByTeamId(teamId).setProject(projectId);
-    }
+//    public void setProject(long teamId, long projectId) {
+//        getTeamByTeamId(teamId).setProject(projectId);
+//    }
 
     public Team updateTeam(long teamId, String username, BiFunction<Team, String, List<TeamEvent>> handler) throws EntityNotFoundException {
         Team team = getTeamByTeamId(teamId);
@@ -58,14 +58,14 @@ public class TeamService {
         return team;
     }
 
-    public void cancel(long projectId) {
-        Team team = this.getTeamMembersByProjectId(projectId);
+    public void cancel(long teamId) {
+        Team team = this.getTeamByTeamId(teamId);
         team.cancel();
     }
 
-    public boolean approveTeam(long projectId) {
+    public boolean approveTeam(long teamId) {
         try {
-            Team team = this.getTeamMembersByProjectId(projectId);
+            Team team = this.getTeamByTeamId(teamId);
             team.approveTeam();
             return true;
         } catch(TeamRejectException e) {
@@ -73,8 +73,8 @@ public class TeamService {
         }
     }
 
-    public void rejectTeam(long projectId) {
-        Team team = this.getTeamMembersByProjectId(projectId);
+    public void rejectTeam(long teamId) {
+        Team team = this.getTeamByTeamId(teamId);
         team.rejectTeam();
     }
 
@@ -92,9 +92,9 @@ public class TeamService {
         if (!team.isUser(username)) throw new EntityNotFoundException("해당 유저는 해당 팀에 존재하지 않습니다.");
     }
 
-    private Team getTeamMembersByProjectId(long projectId) {
-        return this.teamRepository.findByProjectId(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));
-    }
+//    private Team getTeamMembersByProjectId(long projectId) {
+//        return this.teamRepository.findByProjectId(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));
+//    }
 
     private Team getTeamByTeamId(long teamId) {
         return this.teamRepository.findById(teamId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));

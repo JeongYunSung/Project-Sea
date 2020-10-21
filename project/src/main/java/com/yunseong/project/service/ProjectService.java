@@ -7,8 +7,8 @@ import com.yunseong.project.controller.ProjectSearchCondition;
 import com.yunseong.project.domain.Project;
 import com.yunseong.project.domain.ProjectDomainEventPublisher;
 import com.yunseong.project.domain.ProjectRepository;
-import com.yunseong.project.sagas.cancelproject.CancelProjectSaga;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
+import com.yunseong.project.sagas.createproject.CreateProjectSagaState;
 import com.yunseong.project.sagas.startproject.StartProjectSagaState;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import io.eventuate.tram.sagas.orchestration.SagaManager;
@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.Entity;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.function.Function;
@@ -34,6 +33,9 @@ public class ProjectService {
     private ProjectDomainEventPublisher projectDomainEventPublisher;
 
     @Autowired
+    private SagaManager<CreateProjectSagaState> createProjectSagaSagaManager;
+
+    @Autowired
     private SagaManager<StartProjectSagaState> createWeClassSagaSagaManager;
 
     @Autowired
@@ -41,8 +43,11 @@ public class ProjectService {
 
     public ResultWithDomainEvents<Project, ProjectEvent> createProject(CreateProjectRequest request) {
         ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getTeamId(), request.getSubject(), request.getContent(), request.getProjectTheme());
-        this.projectRepository.save(rwe.result);
+        Project project = this.projectRepository.save(rwe.result);
         this.projectDomainEventPublisher.publish(rwe.result, rwe.events);
+
+        this.createProjectSagaSagaManager.create(new CreateProjectSagaState(project.getId(), request.getUsername(), request.getMinSize(), request.getMaxSize()));
+
         return rwe;
     }
 
@@ -58,9 +63,9 @@ public class ProjectService {
         return this.projectRepository.findBySearch(projectSearchCondition, pageable);
     }
 
-    public void startProject(Long projectId) {
+    public void startProject(long projectId, long teamId) {
         closeProject(projectId);
-        StartProjectSagaState data = new StartProjectSagaState(projectId);
+        StartProjectSagaState data = new StartProjectSagaState(projectId, teamId);
         this.createWeClassSagaSagaManager.create(data, Project.class, projectId);
     }
 
@@ -92,18 +97,22 @@ public class ProjectService {
         }
     }
 
-    public void undoCancelProject(long projectId) {
-        updateProject(projectId, Project::undoCancel);
+    public void undoCancelOrPostedProject(long projectId) {
+        updateProject(projectId, Project::undoCancelOrPosted);
     }
 
     public void cancelledProject(long projectId) {
         updateProject(projectId, Project::cancelled);
     }
 
+    public void registerTeam(long projectId, long teamId) {
+        Project project = findProject(projectId);
+        project.registerTeam(teamId);
+    }
 
     public void registerWeClass(long projectId, long weClassId) {
         Project project = findProject(projectId);
-        this.projectDomainEventPublisher.publish(project, project.register(weClassId));
+        project.registerWeClass(weClassId);
     }
 
     public Project findProject(long projectId) {

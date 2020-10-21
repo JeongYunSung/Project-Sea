@@ -30,7 +30,7 @@ public class WeClassCommandHandler {
         try {
             WeClass weClass = this.weClassService.createWeClass(commandMessage.getCommand().getProjectId());
             CreateWeClassReply reply = new CreateWeClassReply(weClass.getId());
-            return withLock(WeClass.class, 5).withSuccess(reply);
+            return withLock(WeClass.class, weClass.getId()).withSuccess(reply);
         } catch (Exception e) {
             return withFailure();
         }

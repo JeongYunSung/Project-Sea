@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CancelTeamCommand implements Command {
 
-    private long projectId;
+    private long teamId;
 }

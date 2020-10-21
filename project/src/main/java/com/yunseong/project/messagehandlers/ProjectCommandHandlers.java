@@ -1,6 +1,7 @@
 package com.yunseong.project.messagehandlers;
 
 import com.yunseong.project.api.ProjectServiceChannels;
+import com.yunseong.project.domain.Project;
 import com.yunseong.project.sagaparticipants.*;
 import com.yunseong.project.service.ProjectService;
 import io.eventuate.tram.commands.consumer.CommandHandlers;
@@ -20,6 +21,9 @@ public class ProjectCommandHandlers {
     public CommandHandlers commandHandler() {
         return SagaCommandHandlersBuilder
                 .fromChannel(ProjectServiceChannels.projectServiceChannel)
+                .onMessage(RegisterTeamCommand.class, this::registerTeam)
+                .onMessage(CreateProjectCommand.class, this::createProject)
+
                 .onMessage(RejectProjectCommand.class, this::rejectProject)
                 .onMessage(RegisterWeClassCommand.class, this::registerWeClass)
                 .onMessage(StartProjectCommand.class, this::startProject)
@@ -30,6 +34,18 @@ public class ProjectCommandHandlers {
                 .build();
     }
 
+    public Message registerTeam(CommandMessage<RegisterTeamCommand> cm) {
+        long projectId = cm.getCommand().getProjectId();
+        long teamId = cm.getCommand().getTeamId();
+        this.projectService.registerTeam(projectId, teamId);
+        return withSuccess();
+    }
+
+    public Message createProject(CommandMessage<CreateProjectCommand> cm) {
+        this.projectService.undoCancelOrPostedProject(cm.getCommand().getProjectId());
+        return withSuccess();
+    }
+
     public Message cancelProject(CommandMessage<ProjectBeginCancelCommand> cm) {
         if(this.projectService.cancelProject(cm.getCommand().getProjectId()))
             return withSuccess();
@@ -38,7 +54,7 @@ public class ProjectCommandHandlers {
     }
 
     public Message undoCancelProject(CommandMessage<ProjectUndoBeginCancelCommand> cm) {
-        this.projectService.undoCancelProject(cm.getCommand().getProjectId());
+        this.projectService.undoCancelOrPostedProject(cm.getCommand().getProjectId());
         return withSuccess();
     }
 

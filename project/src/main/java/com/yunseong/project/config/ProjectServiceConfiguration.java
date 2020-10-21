@@ -6,6 +6,8 @@ import com.yunseong.project.sagaparticipants.TeamProxyService;
 import com.yunseong.project.sagaparticipants.WeClassProxyService;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSaga;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
+import com.yunseong.project.sagas.createproject.CreateProjectSaga;
+import com.yunseong.project.sagas.createproject.CreateProjectSagaState;
 import com.yunseong.project.sagas.startproject.StartProjectSaga;
 import com.yunseong.project.sagas.startproject.StartProjectSagaState;
 import io.eventuate.common.id.IdGenerator;
@@ -40,6 +42,12 @@ public class ProjectServiceConfiguration {
     }
 
     @Bean
+    public SagaManager<CreateProjectSagaState> createProjectSagaStateSagaManager(CreateProjectSaga saga, SagaInstanceRepository sagaInstanceRepository, CommandProducer commandProducer, MessageConsumer messageConsumer,
+                                                                                 SagaCommandProducer sagaCommandProducer, SagaLockManager sagaLockManager) {
+        return new SagaManagerImpl<>(saga, sagaInstanceRepository, commandProducer, messageConsumer, sagaLockManager, sagaCommandProducer);
+    }
+
+    @Bean
     public SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager(CancelProjectSaga saga, SagaInstanceRepository sagaInstanceRepository, CommandProducer commandProducer, MessageConsumer messageConsumer,
                                                                                SagaCommandProducer sagaCommandProducer, SagaLockManager sagaLockManager) {
         return new SagaManagerImpl<>(saga, sagaInstanceRepository, commandProducer, messageConsumer, sagaLockManager, sagaCommandProducer);
@@ -48,6 +56,11 @@ public class ProjectServiceConfiguration {
     @Bean
     public StartProjectSaga startProjectSaga(ProjectProxyService proxyService, TeamProxyService teamProxyService, WeClassProxyService weClassProxyService) {
         return new StartProjectSaga(proxyService, teamProxyService, weClassProxyService);
+    }
+
+    @Bean
+    public CreateProjectSaga createProjectSaga(ProjectProxyService proxyService, TeamProxyService teamProxyService) {
+        return new CreateProjectSaga(proxyService, teamProxyService);
     }
 
     @Bean

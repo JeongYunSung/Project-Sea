@@ -22,7 +22,7 @@ public class StartProjectSaga implements SimpleSaga<StartProjectSagaState> {
                     .invokeParticipant(weClassProxyService.create, StartProjectSagaState::makeCreateWeClassCommand)
                     .onReply(CreateWeClassReply.class, StartProjectSagaState::handleCreateWeClassReply)
                 .step()
-                    .invokeParticipant(projectService.register, StartProjectSagaState::makeRegisterWeClassCommand)
+                    .invokeParticipant(projectService.registerWeClass, StartProjectSagaState::makeRegisterWeClassCommand)
                 .step()
                     .invokeParticipant(projectService.start, StartProjectSagaState::makeStartProjectCommand)
                 .build();

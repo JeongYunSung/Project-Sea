@@ -20,6 +20,6 @@ public class ProjectEventConsumer {
     }
 
     private void startProjectSaga(DomainEventEnvelope<TeamVotedEvent> event) {
-        this.projectService.startProject(event.getEvent().getProjectId());
+        this.projectService.startProject(event.getEvent().getProjectId(), event.getEvent().getTeamId());
     }
 }
