@@ -69,6 +69,16 @@ public class Team {
         }
     }
 
+    public void cancel() {
+        switch (this.teamState) {
+            case RECRUIT_PENDING:
+                this.teamState = TeamState.CANCELLED;
+                return;
+            default:
+                throw new UnsupportedStateTransitionException(this.teamState);
+        }
+    }
+
     public boolean voted() {
         int count = 0;
         for (TeamMember teamMember : this.teamMembers) {

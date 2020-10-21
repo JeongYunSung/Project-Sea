@@ -61,6 +61,36 @@ public class Project {
         return new ResultWithDomainEvents<>(new Project(teamId, subject, content, projectTheme), new ProjectCreatedEvent(new ProjectDetail(teamId, subject, content)));
     }
 
+    public List<ProjectEvent> cancel() {
+        switch (this.projectState) {
+            case POSTED:
+                this.projectState = ProjectState.CANCEL_PENDING;
+                return Collections.emptyList();
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
+
+    public List<ProjectEvent> undoCancel() {
+        switch (this.projectState) {
+            case CANCEL_PENDING:
+                this.projectState = ProjectState.POSTED;
+                return Collections.emptyList();
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
+
+    public List<ProjectEvent> cancelled() {
+        switch (this.projectState) {
+            case CANCEL_PENDING:
+                this.projectState = ProjectState.CANCELLED;
+                return Collections.emptyList();
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
+
     public List<ProjectEvent> close() {
         switch(this.projectState) {
             case POSTED:
@@ -95,6 +125,18 @@ public class Project {
         switch(this.projectState) {
             case CLOSED:
                 this.weClassId = weClassId;
+                return Collections.emptyList();
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
+
+    public List<ProjectEvent> modifyProject(String subject, String content, ProjectTheme projectTheme) {
+        switch (this.projectState) {
+            case POSTED:
+                this.subject = subject;
+                this.content = content;
+                this.projectTheme = projectTheme;
                 return Collections.emptyList();
             default:
                 throw new UnsupportedStateTransitionException(this.projectState);

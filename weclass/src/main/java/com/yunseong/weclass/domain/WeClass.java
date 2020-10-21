@@ -29,7 +29,7 @@ public class WeClass {
 
     private String notice;
 
-    @OneToMany(mappedBy = "weClass")
+    @OneToMany(mappedBy = "weClass", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
 
     @CreatedDate

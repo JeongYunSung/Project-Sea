@@ -4,6 +4,7 @@ import com.yunseong.project.api.controller.CreateProjectRequest;
 import com.yunseong.project.api.controller.CreateProjectResponse;
 import com.yunseong.project.api.controller.ProjectDetailResponse;
 import com.yunseong.project.api.event.ProjectEvent;
+import com.yunseong.project.api.event.ProjectState;
 import com.yunseong.project.domain.Project;
 import com.yunseong.project.service.ProjectService;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
@@ -31,7 +32,7 @@ public class ProjectController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<ProjectDetailResponse> findProject(@PathVariable Long id) {
+    public ResponseEntity<ProjectDetailResponse> findProject(@PathVariable long id) {
         Project project = this.projectService.findProject(id);
         return ResponseEntity.ok(new ProjectDetailResponse(project.getId(), project.getSubject(), project.getContent(), project.getTeamId(), project.getWeClassId(), project.getProjectTheme(), project.getProjectState()));
     }
@@ -42,5 +43,11 @@ public class ProjectController {
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
         PagedModel model = PagedModel.of(page.getContent(), pageMetadata);
         return ResponseEntity.ok(model);
+    }
+
+    @PutMapping(value = "/cancel/{id}")
+    public ResponseEntity<ProjectState> cancelProject(@PathVariable long id) {
+        Project project = this.projectService.cancel(id);
+        return ResponseEntity.ok(project.getProjectState());
     }
 }

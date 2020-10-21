@@ -58,6 +58,11 @@ public class TeamService {
         return team;
     }
 
+    public void cancel(long projectId) {
+        Team team = this.getTeamMembersByProjectId(projectId);
+        team.cancel();
+    }
+
     public boolean approveTeam(long projectId) {
         try {
             Team team = this.getTeamMembersByProjectId(projectId);

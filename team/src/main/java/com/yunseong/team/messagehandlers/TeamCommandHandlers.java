@@ -2,6 +2,7 @@ package com.yunseong.team.messagehandlers;
 
 import com.yunseong.project.api.TeamServiceChannels;
 import com.yunseong.project.api.command.ApproveTeamCommand;
+import com.yunseong.project.api.command.CancelTeamCommand;
 import com.yunseong.project.api.command.RejectTeamCommand;
 import com.yunseong.team.domain.TeamRejectException;
 import com.yunseong.team.service.TeamService;
@@ -24,7 +25,14 @@ public class TeamCommandHandlers {
                 .fromChannel(TeamServiceChannels.teamServiceChannel)
                 .onMessage(ApproveTeamCommand.class, this::approveTeam)
                 .onMessage(RejectTeamCommand.class, this::rejectTeam)
+
+                .onMessage(CancelTeamCommand.class, this::cancelTeam)
                 .build();
+    }
+
+    private Message cancelTeam(CommandMessage<CancelTeamCommand> commandMessage) {
+        this.teamService.cancel(commandMessage.getCommand().getProjectId());
+        return withSuccess();
     }
 
     private Message approveTeam(CommandMessage<ApproveTeamCommand> commandMessage) {
