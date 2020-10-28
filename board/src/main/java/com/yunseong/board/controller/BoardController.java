@@ -41,6 +41,14 @@ public class BoardController {
         return ResponseEntity.ok(model);
     }
 
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("#oauth2.hasScope('board_write') and hasRole('ROLE_' + #request.boardCategory.writePermission.name())")
+    public ResponseEntity<Long> createBoard(@RequestBody BoardCreateRequest request, @RequestPart MultipartFile file, Principal principal) {
+        Board board = this.boardService.createBoard(principal.getName(), request);
+        this.fileService.save(board.getId(), file);
+        return new ResponseEntity<>(board.getId(), HttpStatus.CREATED);
+    }
+
     @PutMapping(value = "/{id}/recommend", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Long> recommendBoard(@PathVariable long id, Principal principal) {
         return ResponseEntity.ok(this.boardService.recommendBoard(id, principal.getName()).getId());
@@ -55,13 +63,5 @@ public class BoardController {
     public ResponseEntity<?> deleteBoard(@PathVariable long id, Principal principal) {
         this.boardService.delete(id, principal.getName());
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("#oauth2.hasScope('board_write') and hasRole('ROLE_' + #request.boardCategory.writePermission.name())")
-    public ResponseEntity<Long> createBoard(@RequestBody BoardCreateRequest request, @RequestPart MultipartFile file, Principal principal) {
-        Board board = this.boardService.createBoard(principal.getName(), request);
-        this.fileService.save(board.getId(), file);
-        return new ResponseEntity<>(board.getId(), HttpStatus.CREATED);
     }
 }
