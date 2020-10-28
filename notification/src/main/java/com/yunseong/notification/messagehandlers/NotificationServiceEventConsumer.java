@@ -19,6 +19,8 @@ public class NotificationServiceEventConsumer {
     @Autowired
     private AES256Util aes256Util;
 
+    private final String prefix = "[Projector]";
+
     public DomainEventHandlers domainEventHandlers() {
         return DomainEventHandlersBuilder
                 .forAggregateType("com.yunseong.member.domain.Member")
@@ -32,18 +34,18 @@ public class NotificationServiceEventConsumer {
 
     private void createNotificationOfNewMember(DomainEventEnvelope<MemberSignedEvent> event) {
         this.sendNotification(event.getEvent().getUsername(), "가입을 축하드립니다 !",
-                event.getEvent().getNickname() + "님 만나서 반갑습니다.이용중 불편하신점은 123dbstjd@naver.com으로 이메일 남겨주시면 감사하겠습니다");
+                event.getEvent().getNickname() + "님 만나서 반갑습니다.|이용중 불편하신점은 123dbstjd@naver.com으로 이메일 남겨주시면 감사하겠습니다.");
     }
 
     private void createNotificationOfNewTeamMember(DomainEventEnvelope<TeamJoinedRequestEvent> event) {
         event.getEvent().getTeamMembers().forEach(m ->
-                this.sendNotification(m.getUsername(), "[" + event.getEvent().getProjectId() + "]프로젝트 알림", "신규회원이 가입하였습니다 !"));
+                this.sendNotification(m.getUsername(), "(" + event.getEvent().getProjectId() + ")프로젝트 알림", "신규회원이 가입하였습니다 !"));
     }
 
     private void createNotificationTeamAuthorizeRequest(DomainEventEnvelope<TeamAuthorizeVoteRequestedEvent> event) {
         for (TeamMemberDetail teamMember : event.getEvent().getTeamMembers()) {
             try {
-                this.sendNotification(teamMember.getUsername(), "[" + event.getEvent().getProjectId() + "]프로젝트 알림", aes256Util.encrypt(event.getAggregateId() + "SPLIT" + teamMember.getUsername()));
+                this.sendNotification(teamMember.getUsername(), "(" + event.getEvent().getProjectId() + ")프로젝트 알림", "프로젝트 시작을 위한 인증번호 코드 발급안내|코드번호 : "+ aes256Util.encrypt(event.getAggregateId() + "SPLIT" + teamMember.getUsername()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -51,12 +53,16 @@ public class NotificationServiceEventConsumer {
     }
 
     private void createNotificationTeamQuit(DomainEventEnvelope<TeamQuitEvent> event) {
-        this.sendNotification(event.getEvent().getUsername(), "[" + event.getEvent().getProjectId() + "]프로젝트 알림",
-                event.getEvent().getUsername() + "님이 프로젝트를 탈퇴하였습니다 ㅠ.ㅠ");
+        this.sendNotification(event.getEvent().getUsername(), "(" + event.getEvent().getProjectId() + ")프로젝트 알림",
+                event.getEvent().getUsername() + "님이 프로젝트를 탈퇴하였습니다.");
     }
 
     private void sendNotification(String username, String subject, String content) {
         this.notificationService.createNotification(username, subject, content);
-//        this.notificationService.sendMail(username, subject, content);
+//        this.notificationService.sendMail(username, this.prefix + subject,
+//                "<div style=\"font-family: Arial, Helvetica, sans-serif; text-align: center\">\n" +
+//                "  <h1>" + subject + "</h1>\n" +
+//                "  <hr>\n<p>" +  String.join( "</p><p>", content.split("\\|"))+
+//                "</p></div>");
     }
 }

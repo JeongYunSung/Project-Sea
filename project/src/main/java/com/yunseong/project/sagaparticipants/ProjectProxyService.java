@@ -9,6 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProjectProxyService {
 
+    public final CommandEndpoint<CloseProjectCommand> close = CommandEndpointBuilder
+            .forCommand(CloseProjectCommand.class)
+            .withChannel(ProjectServiceChannels.projectServiceChannel)
+            .withReply(Success.class)
+            .build();
+
     public final CommandEndpoint<CreateProjectCommand> create = CommandEndpointBuilder
             .forCommand(CreateProjectCommand.class)
             .withChannel(ProjectServiceChannels.projectServiceChannel)
@@ -39,8 +45,8 @@ public class ProjectProxyService {
             .withReply(Success.class)
             .build();
 
-    public final CommandEndpoint<ProjectConfirmCancelCommand> cancel = CommandEndpointBuilder
-            .forCommand(ProjectConfirmCancelCommand.class)
+    public final CommandEndpoint<ConfirmCancelProjectCommand> cancel = CommandEndpointBuilder
+            .forCommand(ConfirmCancelProjectCommand.class)
             .withChannel(ProjectServiceChannels.projectServiceChannel)
             .withReply(Success.class)
             .build();

@@ -3,7 +3,7 @@ package com.yunseong.weclass.controller;
 import com.yunseong.weclass.domain.Report;
 import com.yunseong.weclass.domain.WeClass;
 import com.yunseong.weclass.service.WeClassService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/weclass", consumes = MediaType.APPLICATION_JSON_VALUE)
+@AllArgsConstructor
 public class WeClassController {
 
-    @Autowired
-    private WeClassService weClassService;
+    private final WeClassService weClassService;
 
     @PostMapping("/{id}/report")
     public ResponseEntity<Long> createReport(@PathVariable long id, CreateReportRequest reportRequest) {

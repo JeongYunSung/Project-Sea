@@ -6,11 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    @Query("select n from Notification n where n.username = :username")
+    @Query("select n from Notification n where n.username = :username order by n.id desc")
     Page<Notification> findByUsername(String username, Pageable pageable);
 }

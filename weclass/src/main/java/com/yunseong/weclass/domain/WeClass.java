@@ -5,15 +5,12 @@ import io.eventuate.tram.events.publisher.ResultWithEvents;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -23,6 +20,7 @@ public class WeClass {
 
     @Id
     @GeneratedValue
+    @Column(name = "weclass_id")
     private Long id;
 
     private long projectId;

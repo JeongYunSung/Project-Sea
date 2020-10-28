@@ -9,12 +9,14 @@ import io.eventuate.tram.sagas.simpledsl.SimpleSaga;
 
 public class StartProjectSaga implements SimpleSaga<StartProjectSagaState> {
 
-    private SagaDefinition<StartProjectSagaState> sagaSagaDefinition;
+    private final SagaDefinition<StartProjectSagaState> sagaSagaDefinition;
 
     public StartProjectSaga(ProjectProxyService projectService, TeamProxyService teamProxyService, WeClassProxyService weClassProxyService) {
         this.sagaSagaDefinition =
                 step()
                     .withCompensation(projectService.reject, StartProjectSagaState::makeRejectProjectCommand)
+                .step()
+                    .invokeParticipant(projectService.close, StartProjectSagaState::makeCloseProjectCommand)
                 .step()
                     .invokeParticipant(teamProxyService.approve, StartProjectSagaState::makeApproveTeamCommand)
                     .withCompensation(teamProxyService.reject, StartProjectSagaState::makeRejectTeamCommand)

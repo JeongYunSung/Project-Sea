@@ -25,8 +25,6 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
-    testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "io.eventuate.tram.sagas:eventuate-tram-sagas-testing-support:${eventuateTramSagasVersion}"
 }
 
 def queryDir = "$buildDir/generated/querydsl"

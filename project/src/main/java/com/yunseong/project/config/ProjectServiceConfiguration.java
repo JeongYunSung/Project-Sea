@@ -8,26 +8,29 @@ import com.yunseong.project.sagas.cancelproject.CancelProjectSaga;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
 import com.yunseong.project.sagas.createproject.CreateProjectSaga;
 import com.yunseong.project.sagas.createproject.CreateProjectSagaState;
+import com.yunseong.project.sagas.reviseproject.ReviseProjectSaga;
+import com.yunseong.project.sagas.reviseproject.ReviseProjectSagaData;
 import com.yunseong.project.sagas.startproject.StartProjectSaga;
 import com.yunseong.project.sagas.startproject.StartProjectSagaState;
-import io.eventuate.common.id.IdGenerator;
-import io.eventuate.common.jdbc.EventuateJdbcStatementExecutor;
-import io.eventuate.common.jdbc.EventuateSchema;
 import io.eventuate.tram.commands.producer.CommandProducer;
 import io.eventuate.tram.events.publisher.DomainEventPublisher;
 import io.eventuate.tram.messaging.consumer.MessageConsumer;
 import io.eventuate.tram.sagas.common.SagaLockManager;
-import io.eventuate.tram.sagas.orchestration.*;
+import io.eventuate.tram.sagas.orchestration.SagaCommandProducer;
+import io.eventuate.tram.sagas.orchestration.SagaInstanceRepository;
+import io.eventuate.tram.sagas.orchestration.SagaManager;
+import io.eventuate.tram.sagas.orchestration.SagaManagerImpl;
 import io.eventuate.tram.sagas.spring.common.EventuateTramSagaCommonConfiguration;
 import io.eventuate.tram.sagas.spring.orchestration.SagaOrchestratorConfiguration;
 import io.eventuate.tram.spring.commands.producer.TramCommandProducerConfiguration;
 import io.eventuate.tram.spring.events.publisher.TramEventsPublisherConfiguration;
+import io.eventuate.tram.spring.jdbckafka.TramJdbcKafkaConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import({TramEventsPublisherConfiguration.class, ProjectServiceMessageHandlersConfiguration.class, TramCommandProducerConfiguration.class, EventuateTramSagaCommonConfiguration.class, SagaOrchestratorConfiguration.class})
+@Import({TramEventsPublisherConfiguration.class, ProjectServiceMessageHandlersConfiguration.class, TramCommandProducerConfiguration.class, EventuateTramSagaCommonConfiguration.class, SagaOrchestratorConfiguration.class, TramJdbcKafkaConfiguration.class})
 public class ProjectServiceConfiguration {
 
     @Bean
@@ -48,6 +51,12 @@ public class ProjectServiceConfiguration {
     }
 
     @Bean
+    public SagaManager<ReviseProjectSagaData> reviseProjectSagaDataSagaManager(ReviseProjectSaga saga, SagaInstanceRepository sagaInstanceRepository, CommandProducer commandProducer, MessageConsumer messageConsumer,
+                                                                               SagaCommandProducer sagaCommandProducer, SagaLockManager sagaLockManager) {
+        return new SagaManagerImpl<>(saga, sagaInstanceRepository, commandProducer, messageConsumer, sagaLockManager, sagaCommandProducer);
+    }
+
+    @Bean
     public SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager(CancelProjectSaga saga, SagaInstanceRepository sagaInstanceRepository, CommandProducer commandProducer, MessageConsumer messageConsumer,
                                                                                SagaCommandProducer sagaCommandProducer, SagaLockManager sagaLockManager) {
         return new SagaManagerImpl<>(saga, sagaInstanceRepository, commandProducer, messageConsumer, sagaLockManager, sagaCommandProducer);
@@ -61,6 +70,11 @@ public class ProjectServiceConfiguration {
     @Bean
     public CreateProjectSaga createProjectSaga(ProjectProxyService proxyService, TeamProxyService teamProxyService) {
         return new CreateProjectSaga(proxyService, teamProxyService);
+    }
+
+    @Bean
+    public ReviseProjectSaga reviseProjectSaga() {
+        return new ReviseProjectSaga();
     }
 
     @Bean

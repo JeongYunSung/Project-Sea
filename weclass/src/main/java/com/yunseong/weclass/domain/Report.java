@@ -19,12 +19,17 @@ public class Report {
     @Id
     @GeneratedValue
     private Long id;
+
     private String writer;
+
     private String subject;
+
     private String content;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "weclass_name")
     private WeClass weClass;
+
     private boolean isDelete;
 
     @CreatedDate
@@ -32,23 +37,20 @@ public class Report {
     @LastModifiedDate
     private LocalDateTime updatedTime;
 
-    public Report(String writer, String subject, String content) {
+    public Report(WeClass weClass, String writer, String subject, String content) {
+        this.weClass = weClass;
         this.writer = writer;
         this.subject = subject;
         this.content = content;
         this.isDelete = false;
     }
 
-    public void changeSubejct(String subject) {
+    public void changeSubject(String subject) {
         this.subject = subject;
     }
 
     public void changeContent(String content) {
         this.content = content;
-    }
-
-    public void registerWeClass(WeClass weClass) {
-        this.weClass = weClass;
     }
 
     public void delete() {

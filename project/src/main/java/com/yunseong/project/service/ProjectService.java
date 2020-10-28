@@ -7,11 +7,14 @@ import com.yunseong.project.controller.ProjectSearchCondition;
 import com.yunseong.project.domain.Project;
 import com.yunseong.project.domain.ProjectDomainEventPublisher;
 import com.yunseong.project.domain.ProjectRepository;
+import com.yunseong.project.domain.ProjectRevision;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
 import com.yunseong.project.sagas.createproject.CreateProjectSagaState;
+import com.yunseong.project.sagas.reviseproject.ReviseProjectSagaData;
 import com.yunseong.project.sagas.startproject.StartProjectSagaState;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import io.eventuate.tram.sagas.orchestration.SagaManager;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,22 +27,20 @@ import java.util.function.Function;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class ProjectService {
 
-    @Autowired
-    private ProjectRepository projectRepository;
+    private final ProjectRepository projectRepository;
 
-    @Autowired
-    private ProjectDomainEventPublisher projectDomainEventPublisher;
+    private final ProjectDomainEventPublisher projectDomainEventPublisher;
 
-    @Autowired
-    private SagaManager<CreateProjectSagaState> createProjectSagaSagaManager;
+    private final SagaManager<CreateProjectSagaState> createProjectSagaSagaManager;
 
-    @Autowired
-    private SagaManager<StartProjectSagaState> createWeClassSagaSagaManager;
+    private final SagaManager<StartProjectSagaState> createWeClassSagaSagaManager;
 
-    @Autowired
-    private SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager;
+    private final SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager;
+
+    private final SagaManager<ReviseProjectSagaData> reviseProjectSagaDataSagaManager;
 
     public ResultWithDomainEvents<Project, ProjectEvent> createProject(CreateProjectRequest request) {
         ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getSubject(), request.getContent(), request.getProjectTheme());
@@ -51,10 +52,17 @@ public class ProjectService {
         return rwe;
     }
 
-    public Project cancel(Long projectId) throws EntityNotFoundException {
+    public Project cancel(long projectId) throws EntityNotFoundException {
         Project project = this.findProject(projectId);
         CancelProjectSagaData data = new CancelProjectSagaData(projectId);
         this.cancelProjectSagaDataSagaManager.create(data);
+        return project;
+    }
+
+    public Project revise(long projectId, ProjectRevision projectRevision) throws EntityNotFoundException {
+        Project project = this.findProject(projectId);
+        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, projectRevision);
+        this.reviseProjectSagaDataSagaManager.create(data);
         return project;
     }
 
@@ -64,7 +72,6 @@ public class ProjectService {
     }
 
     public void startProject(long projectId, long teamId) {
-        closeProject(projectId);
         StartProjectSagaState data = new StartProjectSagaState(projectId, teamId);
         this.createWeClassSagaSagaManager.create(data, Project.class, projectId);
     }
@@ -76,8 +83,13 @@ public class ProjectService {
         return project;
     }
 
-    private void closeProject(long projectId) {
-        updateProject(projectId, Project::close);
+    public boolean closeProject(long projectId) {
+        try {
+            updateProject(projectId, Project::close);
+            return true;
+        } catch(UnsupportedStateTransitionException e) {
+            return false;
+        }
     }
 
     public void approveProject(long projectId) {
@@ -97,12 +109,36 @@ public class ProjectService {
         }
     }
 
-    public void undoCancelOrPostedProject(long projectId) {
-        updateProject(projectId, Project::undoCancelOrPosted);
+    public boolean reviseProject(long projectId) {
+        try {
+            updateProject(projectId, Project::revise);
+            return true;
+        }catch (UnsupportedStateTransitionException e) {
+            return false;
+        }
     }
 
-    public void cancelledProject(long projectId) {
-        updateProject(projectId, Project::cancelled);
+    public void undoCancelOrUndoReviseOrPostedProject(long projectId) {
+        updateProject(projectId, Project::undoCancelOrPostedOrRevision);
+    }
+
+    public boolean revisedProject(long projectId, ProjectRevision projectRevision) {
+        try {
+            Project project = findProject(projectId);
+            this.projectDomainEventPublisher.publish(project, project.revised(projectRevision));
+            return true;
+        }catch (UnsupportedStateTransitionException e) {
+            return false;
+        }
+    }
+
+    public boolean cancelledProject(long projectId) {
+        try {
+            updateProject(projectId, Project::cancelled);
+            return true;
+        }catch (UnsupportedStateTransitionException e) {
+            return false;
+        }
     }
 
     public void registerTeam(long projectId, long teamId) {

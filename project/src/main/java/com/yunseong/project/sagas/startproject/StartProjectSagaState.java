@@ -2,6 +2,7 @@ package com.yunseong.project.sagas.startproject;
 
 import com.yunseong.project.api.command.ApproveTeamCommand;
 import com.yunseong.project.api.command.RejectTeamCommand;
+import com.yunseong.project.sagaparticipants.CloseProjectCommand;
 import com.yunseong.project.sagaparticipants.RegisterWeClassCommand;
 import com.yunseong.project.sagaparticipants.RejectProjectCommand;
 import com.yunseong.project.sagaparticipants.StartProjectCommand;
@@ -18,10 +19,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class StartProjectSagaState {
 
     @NonNull
-    private long projectId;
+    private Long projectId;
     private Long weClassId;
     @NonNull
-    private long teamId;
+    private Long teamId;
 
     @Override
     public boolean equals(Object o) {
@@ -31,6 +32,10 @@ public class StartProjectSagaState {
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    public CloseProjectCommand makeCloseProjectCommand() {
+        return new CloseProjectCommand(this.projectId);
     }
 
     public RejectProjectCommand makeRejectProjectCommand() {

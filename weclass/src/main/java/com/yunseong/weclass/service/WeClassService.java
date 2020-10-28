@@ -5,7 +5,7 @@ import com.yunseong.weclass.domain.ReportRepository;
 import com.yunseong.weclass.domain.WeClass;
 import com.yunseong.weclass.domain.WeClassRepository;
 import io.eventuate.tram.events.publisher.ResultWithEvents;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,12 +15,11 @@ import javax.persistence.EntityNotFoundException;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class WeClassService {
 
-    @Autowired
-    private WeClassRepository weClassRepository;
-    @Autowired
-    private ReportRepository reportRepository;
+    private final WeClassRepository weClassRepository;
+    private final ReportRepository reportRepository;
 
     public WeClass createWeClass(long projectId) {
         ResultWithEvents<WeClass> rwe = WeClass.create(projectId);
@@ -29,8 +28,8 @@ public class WeClassService {
 
     public WeClass createReport(long weClassId, String username, String subject, String content) {
         WeClass weClass = this.weClassRepository.findById(weClassId).orElseThrow(() -> new EntityNotFoundException("해당 WeClass는 존재하지 않습니다."));
-        Report report = new Report(username, subject, content);
-        report.equals(weClass);
+        Report report = new Report(weClass, username, subject, content);
+        this.reportRepository.save(report);
         return weClass;
     }
 
@@ -39,7 +38,7 @@ public class WeClassService {
         if(!report.getWriter().equals(writer)) {
             throw new DifferentOwnerException("소유자가 다릅니다.");
         }
-        report.changeSubejct(subject);
+        report.changeSubject(subject);
         report.changeContent(content);
     }
 

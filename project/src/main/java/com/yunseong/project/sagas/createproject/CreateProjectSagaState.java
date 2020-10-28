@@ -3,7 +3,7 @@ package com.yunseong.project.sagas.createproject;
 import com.yunseong.project.api.command.CreateTeamCommand;
 import com.yunseong.project.api.command.CreateTeamReply;
 import com.yunseong.project.sagaparticipants.CreateProjectCommand;
-import com.yunseong.project.sagaparticipants.ProjectConfirmCancelCommand;
+import com.yunseong.project.sagaparticipants.ConfirmCancelProjectCommand;
 import com.yunseong.project.sagaparticipants.RegisterTeamCommand;
 import lombok.*;
 
@@ -14,16 +14,16 @@ public class CreateProjectSagaState {
 
     private long teamId;
     @NonNull
-    private long projectId;
+    private Long projectId;
     @NonNull
     private String username;
     @NonNull
-    private int minSize;
+    private Integer minSize;
     @NonNull
-    private int maxSize;
+    private Integer maxSize;
 
-    public ProjectConfirmCancelCommand makeProjectConfirmCancelCommand() {
-        return new ProjectConfirmCancelCommand(this.projectId);
+    public ConfirmCancelProjectCommand makeProjectConfirmCancelCommand() {
+        return new ConfirmCancelProjectCommand(this.projectId);
     }
 
     public CreateTeamCommand makeCreateTeamCommand() {

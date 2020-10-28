@@ -3,6 +3,7 @@ package com.yunseong.notification.service;
 import com.yunseong.notification.config.MailSenderConfiguration;
 import com.yunseong.notification.domain.Notification;
 import com.yunseong.notification.domain.NotificationRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,14 +21,12 @@ import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityNotFoundException;
 
 @Service
+@AllArgsConstructor
 public class NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
-    @Autowired
-    private JavaMailSender javaMailSender;
-    @Autowired
-    private MailSenderConfiguration mailSenderConfiguration;
+    private final NotificationRepository notificationRepository;
+    private final JavaMailSender javaMailSender;
+    private final MailSenderConfiguration mailSenderConfiguration;
 
     @Transactional
     public void createNotification(String username, String subject, String content) {
@@ -37,6 +36,8 @@ public class NotificationService {
     @Async("mail")
     public void sendMail(String username, String subject, String content) {
         try {
+            Thread thread = Thread.currentThread();
+            System.out.println(thread.getName());
             MimeMessage mimeMessage = this.javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setFrom(mailSenderConfiguration.getUsername() + "@naver.com");

@@ -13,7 +13,7 @@ public class MyUser extends User {
     private Long id;
 
     public MyUser(Member member) {
-        super(member.getUsername(), member.getPassword(), Arrays.asList(new SimpleGrantedAuthority(member.getPermission().getValue())));
+        super(member.getUsername(), member.getPassword(), Arrays.asList(new SimpleGrantedAuthority("ROLE_" + member.getPermission().name())));
         this.id = member.getId();
     }
 }

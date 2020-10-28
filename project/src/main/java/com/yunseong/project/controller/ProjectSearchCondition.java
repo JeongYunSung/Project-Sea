@@ -1,5 +1,6 @@
 package com.yunseong.project.controller;
 
+import com.yunseong.project.api.event.ProjectState;
 import com.yunseong.project.api.event.ProjectTheme;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,5 +13,6 @@ import lombok.NoArgsConstructor;
 public class ProjectSearchCondition {
 
     private String subject;
+    private ProjectState projectState;
     private ProjectTheme projectTheme;
 }

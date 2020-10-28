@@ -1,6 +1,6 @@
 package com.yunseong.member.controller;
 
-import com.yunseong.member.domain.Permission;
+import com.yunseong.member.api.controller.Permission;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

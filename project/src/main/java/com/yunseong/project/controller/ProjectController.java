@@ -4,11 +4,11 @@ import com.yunseong.project.api.controller.CreateProjectRequest;
 import com.yunseong.project.api.controller.CreateProjectResponse;
 import com.yunseong.project.api.controller.ProjectDetailResponse;
 import com.yunseong.project.api.event.ProjectEvent;
-import com.yunseong.project.api.event.ProjectState;
 import com.yunseong.project.domain.Project;
+import com.yunseong.project.domain.ProjectRevision;
 import com.yunseong.project.service.ProjectService;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_VALUE)
+@AllArgsConstructor
 public class ProjectController {
 
-    @Autowired
-    private ProjectService projectService;
+    private final ProjectService projectService;
 
     @PostMapping
     public ResponseEntity<CreateProjectResponse> createProject(@RequestBody CreateProjectRequest createProjectRequest) {
@@ -48,6 +48,12 @@ public class ProjectController {
     @PutMapping(value = "/cancel/{id}")
     public ResponseEntity<Long> cancelProject(@PathVariable long id) {
         Project project = this.projectService.cancel(id);
+        return ResponseEntity.ok(project.getId());
+    }
+
+    @PutMapping(value = "/revise/{id}")
+    public ResponseEntity<Long> reviseProject(@PathVariable long id, @RequestBody ProjectRevision projectRevision) {
+        Project project = this.projectService.revise(id, projectRevision);
         return ResponseEntity.ok(project.getId());
     }
 }

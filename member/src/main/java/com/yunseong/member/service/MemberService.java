@@ -4,6 +4,7 @@ import com.yunseong.member.domain.Member;
 import com.yunseong.member.domain.MemberRepository;
 import io.eventuate.tram.events.publisher.DomainEventPublisher;
 import io.eventuate.tram.events.publisher.ResultWithEvents;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,16 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class MemberService {
 
-    @Autowired
-    private MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
-    @Autowired
-    private DomainEventPublisher domainEventPublisher;
+    private final DomainEventPublisher domainEventPublisher;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public ResultWithEvents<Member> signUp(String username, String password, String nickname) {
         ResultWithEvents<Member> rwe = Member.create(username, this.passwordEncoder.encode(password), nickname);

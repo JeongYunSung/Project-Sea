@@ -1,6 +1,7 @@
 package com.yunseong.member.config;
 
 import com.yunseong.member.service.MemberDetailsService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,23 +18,24 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 
 @Configuration
 @EnableAuthorizationServer
+@AllArgsConstructor
 public class AuthorizationConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private OAuth2Configuration oAuth2Configuration;
+    private final OAuth2Configuration oAuth2Configuration;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private MemberDetailsService memberDetailsService;
+    private final MemberDetailsService memberDetailsService;
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) {
-        security.passwordEncoder(this.passwordEncoder);
+        security
+                .passwordEncoder(this.passwordEncoder)
+                .tokenKeyAccess("permitAll()")
+                .checkTokenAccess("isAuthenticated()")
+                .allowFormAuthenticationForClients();
     }
 
     @Override

@@ -3,9 +3,9 @@ package com.yunseong.project.sagas.cancelproject;
 import com.yunseong.project.api.ProjectServiceChannels;
 import com.yunseong.project.api.TeamServiceChannels;
 import com.yunseong.project.api.command.CancelTeamCommand;
-import com.yunseong.project.sagaparticipants.ProjectBeginCancelCommand;
-import com.yunseong.project.sagaparticipants.ProjectConfirmCancelCommand;
-import com.yunseong.project.sagaparticipants.ProjectUndoBeginCancelCommand;
+import com.yunseong.project.sagaparticipants.BeginCancelProjectCommand;
+import com.yunseong.project.sagaparticipants.ConfirmCancelProjectCommand;
+import com.yunseong.project.sagaparticipants.UndoBeginCancelProjectCommand;
 import io.eventuate.tram.commands.consumer.CommandWithDestination;
 import io.eventuate.tram.sagas.orchestration.SagaDefinition;
 import io.eventuate.tram.sagas.simpledsl.SimpleSaga;
@@ -37,13 +37,13 @@ public class CancelProjectSaga implements SimpleSaga<CancelProjectSagaData> {
     }
 
     private CommandWithDestination cancelProject(CancelProjectSagaData data) {
-        return send(new ProjectBeginCancelCommand(data.getProjectId()))
+        return send(new BeginCancelProjectCommand(data.getProjectId()))
                 .to(ProjectServiceChannels.projectServiceChannel)
                 .build();
     }
 
     private CommandWithDestination undoCancelProject(CancelProjectSagaData data) {
-        return send(new ProjectUndoBeginCancelCommand(data.getProjectId()))
+        return send(new UndoBeginCancelProjectCommand(data.getProjectId()))
                 .to(ProjectServiceChannels.projectServiceChannel)
                 .build();
     }
@@ -55,7 +55,7 @@ public class CancelProjectSaga implements SimpleSaga<CancelProjectSagaData> {
     }
 
     private CommandWithDestination confirmCancelProject(CancelProjectSagaData data) {
-        return send(new ProjectConfirmCancelCommand(data.getProjectId()))
+        return send(new ConfirmCancelProjectCommand(data.getProjectId()))
                 .to(ProjectServiceChannels.projectServiceChannel)
                 .build();
     }

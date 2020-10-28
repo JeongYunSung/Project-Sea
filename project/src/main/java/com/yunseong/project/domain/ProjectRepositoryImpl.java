@@ -3,7 +3,6 @@ package com.yunseong.project.domain;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.yunseong.project.api.event.ProjectState;
 import com.yunseong.project.api.event.ProjectTheme;
 import com.yunseong.project.controller.ProjectSearchCondition;
 import org.springframework.data.domain.Page;
@@ -19,7 +18,7 @@ import static com.yunseong.project.domain.QProject.project;
 @Repository
 public class ProjectRepositoryImpl implements ProjectQueryRepository {
 
-    private JPAQueryFactory jpaQueryFactory;
+    private final JPAQueryFactory jpaQueryFactory;
 
     public ProjectRepositoryImpl(EntityManager entityManager) {
         this.jpaQueryFactory = new JPAQueryFactory(entityManager);
@@ -30,15 +29,20 @@ public class ProjectRepositoryImpl implements ProjectQueryRepository {
         QueryResults<Project> result = this.jpaQueryFactory
                 .select(project)
                 .from(project)
-                .where(project.projectState.eq(ProjectState.POSTED), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getProjectTheme()))
+                .where(eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getProjectTheme()))
+                .orderBy(project.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
         return new PageImpl<>(result.getResults(), pageable, result.getTotal());
     }
 
+    private BooleanExpression eqProjectState(ProjectSearchCondition projectSearchCondition) {
+        return projectSearchCondition.getProjectState() != null ? project.projectState.eq(projectSearchCondition.getProjectState()) : null;
+    }
+
     private BooleanExpression equalsTheme(ProjectTheme projectTheme) {
-        return projectTheme == null ? project.projectTheme.eq(projectTheme) : null;
+        return projectTheme != null ? project.projectTheme.eq(projectTheme) : null;
     }
 
     private BooleanExpression containsSubject(String subject) {

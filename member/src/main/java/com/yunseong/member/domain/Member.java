@@ -1,5 +1,6 @@
 package com.yunseong.member.domain;
 
+import com.yunseong.member.api.controller.Permission;
 import com.yunseong.member.api.controller.events.MemberSignedEvent;
 import io.eventuate.tram.events.publisher.ResultWithEvents;
 import lombok.AccessLevel;
@@ -21,19 +22,26 @@ public class Member {
 
     @Id
     @GeneratedValue
+    @Column(name = "member_id")
     private Long id;
+
     @Column(nullable = false, updatable = false)
     private String username; // 유저네임을 이메일로 받을예정
+
     @Column(nullable = false)
     private String password;
+
     @Column(nullable = false)
     private String nickname;
+
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private Permission permission;
+
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private LocalDateTime createdDate;
+
     @Column(nullable = false)
     @LastModifiedDate
     private LocalDateTime updatedDate;

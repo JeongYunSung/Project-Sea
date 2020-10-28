@@ -33,6 +33,11 @@ out/
 ### VS Code ###
 .vscode/
 
+### Node ===
+node_modules
+dist
+
 ### my ignore ###
 application-db.yml
 application-mail.yml
+application-oauth2.yml

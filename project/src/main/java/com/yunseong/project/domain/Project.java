@@ -23,6 +23,7 @@ public class Project {
 
     @Id
     @GeneratedValue
+    @Column(name = "project_id")
     private Long id;
 
     @Column(nullable = false)
@@ -59,6 +60,29 @@ public class Project {
         return new ResultWithDomainEvents<>(new Project(subject, content, projectTheme), new ProjectCreatedEvent(new ProjectDetail(subject, content)));
     }
 
+    public List<ProjectEvent> revise() {
+        switch (this.projectState) {
+            case POSTED:
+                this.projectState = ProjectState.REVISION_PENDING;
+                return Collections.emptyList();
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
+
+    public List<ProjectEvent> revised(ProjectRevision projectRevision) {
+        switch (this.projectState) {
+            case REVISION_PENDING:
+                this.projectState = ProjectState.POSTED;
+                this.subject = projectRevision.getSubject();
+                this.content = projectRevision.getContent();
+                this.projectTheme = projectRevision.getProjectTheme();
+                return Collections.emptyList();
+            default:
+                throw new UnsupportedStateTransitionException(this.projectState);
+        }
+    }
+
     public List<ProjectEvent> cancel() {
         switch (this.projectState) {
             case POSTED:
@@ -69,9 +93,9 @@ public class Project {
         }
     }
 
-    public List<ProjectEvent> undoCancelOrPosted() {
+    public List<ProjectEvent> undoCancelOrPostedOrRevision() {
         switch (this.projectState) {
-            case CANCEL_PENDING: case POST_PENDING:
+            case CANCEL_PENDING: case POST_PENDING: case REVISION_PENDING:
                 this.projectState = ProjectState.POSTED;
                 return Collections.emptyList();
             default:
