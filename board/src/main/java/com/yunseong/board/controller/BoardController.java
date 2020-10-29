@@ -49,11 +49,13 @@ public class BoardController {
         return new ResponseEntity<>(board.getId(), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
     @PutMapping(value = "/{id}/recommend", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Long> recommendBoard(@PathVariable long id, Principal principal) {
         return ResponseEntity.ok(this.boardService.recommendBoard(id, principal.getName()).getId());
     }
 
+    @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Long> reviseBoard(@PathVariable long id, @RequestBody BoardRevision boardRevision, Principal principal) {
         return ResponseEntity.ok(this.boardService.reviseBoard(id, principal.getName(), boardRevision).getId());

@@ -5,6 +5,7 @@ import com.yunseong.board.controller.BoardDetailResponse;
 import com.yunseong.board.controller.BoardSearchCondition;
 import com.yunseong.board.controller.BoardSearchResponse;
 import com.yunseong.board.domain.Board;
+import com.yunseong.board.domain.BoardCategory;
 import com.yunseong.board.domain.BoardRepository;
 import com.yunseong.board.domain.BoardRevision;
 import lombok.AllArgsConstructor;
@@ -57,6 +58,11 @@ public class BoardService {
         BoardDetailResponse response = this.boardRepository.findFetchDtoById(id);
         if(response.getSubject() == null) throw new EntityNotFoundException("해당 게시판엔티티는 존재하지않습니다.");
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public BoardCategory getCategory(long id) {
+        return this.getBoard(id).getBoardCategory();
     }
 
     private Board getBoard(long id) {
