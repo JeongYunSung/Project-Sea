@@ -43,7 +43,9 @@ public class Team {
     private LocalDateTime updatedTime;
 
     @OneToMany(cascade = CascadeType.ALL)
-    private List<TeamMember> teamMembers = new ArrayList<>();
+    private final List<TeamMember> teamMembers = new ArrayList<>();
+
+    private boolean isDelete;
 
     public Team(long projectId, String username, int minSize, int maxSize) {
         this.projectId = projectId;
@@ -51,6 +53,7 @@ public class Team {
         this.maxSize = maxSize;
         this.teamState = TeamState.RECRUIT_PENDING;
         this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.LEADER)));
+        this.isDelete = false;
     }
 
     public List<TeamEvent> join(String username) {

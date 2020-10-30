@@ -1,4 +1,4 @@
-rootProject.name = 'projector'
+rootProject.name = 'project-sea'
 include 'member'
 include 'member-api'
 include 'notification'

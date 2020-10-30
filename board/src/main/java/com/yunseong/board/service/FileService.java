@@ -12,7 +12,7 @@ import java.nio.file.Path;
 @Service
 public class FileService {
 
-    private final Resource resource = new DefaultResourceLoader().getResource("file:C:/springboot/images/");
+    private final Resource resource = new DefaultResourceLoader().getResource("file:D:/Springboot/[20201007]Third_Project/board/src/main/resources/images/");
 
     public void save(long id, MultipartFile file) {
         try {

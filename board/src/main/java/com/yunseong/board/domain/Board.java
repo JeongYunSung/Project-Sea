@@ -1,6 +1,7 @@
 package com.yunseong.board.domain;
 
 
+import com.yunseong.board.service.CannotReviseBoardIfWriterNotWereException;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,7 +15,7 @@ import java.util.Set;
 @Entity
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class Board {
 
     @Id
@@ -56,12 +57,14 @@ public class Board {
         this.recommend.add(username);
     }
 
-    public void revise(BoardRevision boardRevision) {
+    public void revise(String writer, BoardRevision boardRevision) {
+        if(!this.writer.equals(writer)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
         this.subject = boardRevision.getSubject();
         this.content = boardRevision.getContent();
     }
 
-    public void delete() {
+    public void delete(String writer) {
+        if(!this.writer.equals(writer)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 삭제할 수 없습니다");
         this.isDelete = true;
     }
 }

@@ -41,3 +41,4 @@ dist
 application-db.yml
 application-mail.yml
 application-oauth2.yml
+**/images/**

@@ -33,7 +33,7 @@ public class WeClassController {
     }
 
     @GetMapping("/{id}/reports")
-    public ResponseEntity<PagedModel> findReports(@PathVariable long id, @PageableDefault Pageable pageable) {
+    public ResponseEntity<PagedModel<WeClassReportResponse>> findReports(@PathVariable long id, @PageableDefault Pageable pageable) {
         Page<WeClassReportResponse> page = this.weClassService.findReports(id, pageable).map(r -> new WeClassReportResponse(r.getWriter(), r.getSubject()));
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
         return ResponseEntity.ok(PagedModel.of(page.getContent(), metadata));
@@ -46,13 +46,13 @@ public class WeClassController {
     }
 
     @PutMapping("/reports/{id}")
-    public ResponseEntity updateReport(@PathVariable long id, @RequestBody WeClassReportUpdateRequest request) {
+    public ResponseEntity<?> updateReport(@PathVariable long id, @RequestBody WeClassReportUpdateRequest request) {
         this.weClassService.update(id, request.getWriter(), request.getSubject(), request.getContent());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/reports/{id}")
-    public ResponseEntity deleteReport(@PathVariable long id) {
+    public ResponseEntity<?> deleteReport(@PathVariable long id) {
         this.weClassService.delete(id);
         return ResponseEntity.noContent().build();
     }

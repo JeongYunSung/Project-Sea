@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class WeClass {
 
     @Id
@@ -27,6 +27,8 @@ public class WeClass {
 
     private String notice;
 
+    private boolean isDelete;
+
     @CreatedDate
     private LocalDateTime createdDate;
 
@@ -36,6 +38,7 @@ public class WeClass {
     public WeClass(long projectId) {
         this.projectId = projectId;
         this.notice = "WeClass에 오신걸 환영합니다.";
+        this.isDelete = false;
     }
 
     public static ResultWithEvents<WeClass> create(long projectId) {

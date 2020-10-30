@@ -12,7 +12,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:C:/springboot/images/")
+                .addResourceLocations("file:D:/Springboot/[20201007]Third_Project/board/src/main/resources/images/")
                 .setCachePeriod(604800);
     }
 }

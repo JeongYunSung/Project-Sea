@@ -1,13 +1,7 @@
 package com.yunseong.board.service;
 
-import com.yunseong.board.controller.BoardCreateRequest;
-import com.yunseong.board.controller.BoardDetailResponse;
-import com.yunseong.board.controller.BoardSearchCondition;
-import com.yunseong.board.controller.BoardSearchResponse;
-import com.yunseong.board.domain.Board;
-import com.yunseong.board.domain.BoardCategory;
-import com.yunseong.board.domain.BoardRepository;
-import com.yunseong.board.domain.BoardRevision;
+import com.yunseong.board.controller.*;
+import com.yunseong.board.domain.*;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,15 +16,46 @@ import javax.persistence.EntityNotFoundException;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final CommentRepository commentRepository;
+
+    public Comment createComment(long boardId, String writer, CommentCreateRequest request) {
+        Comment originComment = null;
+        CommentState commentState = CommentState.ORIGINAL;
+        if(request.getCommentId() != null) {
+            originComment = this.commentRepository.findFetchById(request.getCommentId()).orElseThrow(() -> new EntityNotFoundException("해당 댓글엔티티는 존재하지않습니다."));
+            if(originComment.getOriginalComment() != null) originComment = originComment.getOriginalComment();
+            commentState = CommentState.REPLY;
+        }
+        return this.commentRepository.save(new Comment(this.getBoard(boardId), writer, request.getContent(), originComment, commentState));
+    }
+
+    public Comment reviseComment(long id, String writer, String content) {
+        Comment comment = this.getComment(id);
+        comment.revise(writer, content);
+        return comment;
+    }
+
+    public void deleteComment(long id, String writer) {
+        Comment comment = this.getComment(id);
+        comment.delete(writer);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Comment> findCommentByPage(long boardId, Pageable pageable) {
+        return this.commentRepository.findPage(boardId, pageable);
+    }
+
+    private Comment getComment(long id) {
+        return this.commentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 댓글엔티티는 존재하지않습니다."));
+    }
 
     public Board createBoard(String writer, BoardCreateRequest request) {
-        return this.boardRepository.save(new Board(writer, request.getSubject(), request.getContent(), request.getBoardCategory()));
+        return this.boardRepository.save(new Board(writer, request.getSubject(), request.getContent(), request.getCategory()));
     }
 
     public void delete(long id, String writer) {
         Board board = this.getBoard(id);
-        if(!writer.equals(board.getWriter())) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 삭제할 수 없습니다");
-        board.delete();
+        board.delete(writer);
     }
 
     public Board recommendBoard(long id, String recommender) {
@@ -43,8 +68,7 @@ public class BoardService {
 
     public Board reviseBoard(long id, String writer, BoardRevision boardRevision) {
         Board board = this.getBoard(id);
-        if(!writer.equals(board.getWriter())) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
-        board.revise(boardRevision);
+        board.revise(writer, boardRevision);
         return board;
     }
 

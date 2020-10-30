@@ -27,7 +27,7 @@ public class WeClassService {
     }
 
     public WeClass createReport(long weClassId, String username, String subject, String content) {
-        WeClass weClass = this.weClassRepository.findById(weClassId).orElseThrow(() -> new EntityNotFoundException("해당 WeClass는 존재하지 않습니다."));
+        WeClass weClass = this.weClassRepository.findOpenedById(weClassId).orElseThrow(() -> new EntityNotFoundException("해당 WeClass는 존재하지 않습니다."));
         Report report = new Report(weClass, username, subject, content);
         this.reportRepository.save(report);
         return weClass;
@@ -48,12 +48,12 @@ public class WeClassService {
     }
 
     private Report getReport(long id) {
-        return this.reportRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 Report는 존재하지 않습니다."));
+        return this.reportRepository.findOpenedById(id).orElseThrow(() -> new EntityNotFoundException("해당 Report는 존재하지 않습니다."));
     }
 
     @Transactional(readOnly = true)
     public Report findReport(long  id) {
-        return this.reportRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 Report는 존재하지 않습니다."));
+        return this.reportRepository.findOpenedById(id).orElseThrow(() -> new EntityNotFoundException("해당 Report는 존재하지 않습니다."));
     }
 
     @Transactional(readOnly = true)
@@ -63,6 +63,6 @@ public class WeClassService {
 
     @Transactional(readOnly = true)
     public WeClass findById(long weClassId) {
-        return this.weClassRepository.findById(weClassId).orElseThrow(() -> new EntityNotFoundException("해당 WeClass는 존재하지 않습니다."));
+        return this.weClassRepository.findOpenedById(weClassId).orElseThrow(() -> new EntityNotFoundException("해당 WeClass는 존재하지 않습니다."));
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    @Query("select n from Notification n where n.username = :username order by n.id desc")
+    @Query(value = "select n from Notification n where n.username = :username order by n.id desc",
+    countQuery = "select n from Notification n where n.username = :username")
     Page<Notification> findByUsername(String username, Pageable pageable);
 }
