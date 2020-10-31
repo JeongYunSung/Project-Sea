@@ -10,7 +10,11 @@ import com.yunseong.project.api.event.TeamQuitEvent;
 import io.eventuate.tram.events.subscriber.DomainEventEnvelope;
 import io.eventuate.tram.events.subscriber.DomainEventHandlers;
 import io.eventuate.tram.events.subscriber.DomainEventHandlersBuilder;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 
 public class NotificationServiceEventConsumer {
 
@@ -18,8 +22,6 @@ public class NotificationServiceEventConsumer {
     private NotificationService notificationService;
     @Autowired
     private AES256Util aes256Util;
-
-    private final String prefix = "[Projector]";
 
     public DomainEventHandlers domainEventHandlers() {
         return DomainEventHandlersBuilder
@@ -33,8 +35,16 @@ public class NotificationServiceEventConsumer {
     }
 
     private void createNotificationOfNewMember(DomainEventEnvelope<MemberSignedEvent> event) {
-        this.sendNotification(event.getEvent().getUsername(), "가입을 축하드립니다 !",
-                event.getEvent().getNickname() + "님 만나서 반갑습니다.|이용중 불편하신점은 123dbstjd@naver.com으로 이메일 남겨주시면 감사하겠습니다.");
+        try {
+            this.sendNotification(event.getEvent().getUsername(), "가입을 축하드립니다 !",
+                    event.getEvent().getNickname() + "님 만나서 반갑습니다.|" +
+                            "해당 서비스를 원활하게 이용하기 위해선 이메일 인증을 진행해주셔야 합니다|" +
+                            "코드번호 : " + aes256Util.encrypt("이메일인증코드번호:" + event.getEvent().getUsername()) + "'/>|" +
+                            "위 코드를 클릭해 사이트에 접속하시면 인증이 완료됩니다|" +
+                            "이외의 불편하신점 혹은 궁금하신점이 있으시면 123dbstjd@naver.com으로 이메일 남겨주시면 감사하겠습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void createNotificationOfNewTeamMember(DomainEventEnvelope<TeamJoinedRequestEvent> event) {
@@ -59,10 +69,11 @@ public class NotificationServiceEventConsumer {
 
     private void sendNotification(String username, String subject, String content) {
         this.notificationService.createNotification(username, subject, content);
-//        this.notificationService.sendMail(username, this.prefix + subject,
-//                "<div style=\"font-family: Arial, Helvetica, sans-serif; text-align: center\">\n" +
-//                "  <h1>" + subject + "</h1>\n" +
-//                "  <hr>\n<p>" +  String.join( "</p><p>", content.split("\\|"))+
-//                "</p></div>");
+        String prefix = "[Project-Sea]";
+        this.notificationService.sendMail(username, prefix + subject,
+                "<div style=\"font-family: Arial, Helvetica, sans-serif; text-align: center\">\n" +
+                "  <h1>" + subject + "</h1>\n" +
+                "  <hr>\n<p>" +  String.join( "</p><p>", content.split("\\|"))+
+                "</p></div>");
     }
 }

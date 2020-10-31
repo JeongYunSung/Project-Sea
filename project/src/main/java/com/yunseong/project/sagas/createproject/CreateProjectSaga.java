@@ -8,7 +8,7 @@ import io.eventuate.tram.sagas.simpledsl.SimpleSaga;
 
 public class CreateProjectSaga implements SimpleSaga<CreateProjectSagaState> {
 
-    private SagaDefinition<CreateProjectSagaState> sagaDefinition;
+    private final SagaDefinition<CreateProjectSagaState> sagaDefinition;
 
     public CreateProjectSaga(ProjectProxyService proxyService, TeamProxyService teamProxyService) {
         this.sagaDefinition =

@@ -31,7 +31,7 @@ public class CreateProjectSagaState {
     }
 
     public RegisterTeamCommand makeRegisterTeamCommand() {
-        return new RegisterTeamCommand(this.teamId, this.teamId);
+        return new RegisterTeamCommand(this.projectId, this.teamId);
     }
 
     public CreateProjectCommand makeCreateProjectCommand() {

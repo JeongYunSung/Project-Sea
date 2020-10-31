@@ -15,7 +15,7 @@
 
 - Notification Service : 특정 이벤트에 대해 알림을 발생 및 읽기, 이메일 전송 구현 어플에 알림푸쉬해주는 기능 미구현
 - Member Service : stateless와 MSA환경을 위해 OAuth2를 이용한 가입 및 로그인 구현 ( password, refresh_token 방식 ) 이메일보내기, 프로필 수정, 확인 추가 예정
-- Project Service : 프로젝트 생성(사가), 프로젝트 시작(사가), 프로젝트 거절, 프로젝트 취소(사가), 프로젝트 변경(사가)
+- Project Service : 프로젝트 생성(사가), 프로젝트 시작(사가), 프로젝트 거절, 프로젝트 취소(사가), 프로젝트 변경
 - Team Service : 팀 생성, 입장, 투표, 탈퇴, 조회 등 구현
 - WeClass Service : 위클래스 생성, 보고서 작성, 확인, 수정, 삭제 구현
 - Board Service : Resource서버, 이미지 업로드, 게시판 생성, 확인, 수정, 추천, 삭제, 검색 구현, 댓글은 구현중
@@ -34,3 +34,4 @@
 
 - Redis & CQRS
 - Docker & Kubernets
+- 헬스체크 & 중앙로깅, 콘피그 서버

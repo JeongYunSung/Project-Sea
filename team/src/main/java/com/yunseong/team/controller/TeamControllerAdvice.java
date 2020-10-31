@@ -15,30 +15,30 @@ import javax.persistence.EntityNotFoundException;
 public class TeamControllerAdvice {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
-        errors.reject("reduplication", exception.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        errors.reject("reduplication", "해당 팀은 이미 존재합니다.");
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity handleEntityNotFoundException(EntityNotFoundException exception) {
+    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
         errors.reject("notFound", exception.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 
     @ExceptionHandler(NotMatchedCryptException.class)
-    public ResponseEntity handleNotMatchCryptException(NotMatchedCryptException exception) {
+    public ResponseEntity<?> handleNotMatchCryptException(NotMatchedCryptException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
         errors.reject("notMatchedToken", exception.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 
     @ExceptionHandler(UnsupportedStateTransitionException.class)
-    public ResponseEntity handleUnsupportedStateTransitionException(UnsupportedStateTransitionException exception) {
+    public ResponseEntity<?> handleUnsupportedStateTransitionException(UnsupportedStateTransitionException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
         errors.reject("unsupportedState", exception.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 }

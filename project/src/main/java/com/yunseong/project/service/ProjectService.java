@@ -61,8 +61,9 @@ public class ProjectService {
 
     public Project revise(long projectId, ProjectRevision projectRevision) throws EntityNotFoundException {
         Project project = this.findProject(projectId);
-        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, projectRevision);
-        this.reviseProjectSagaDataSagaManager.create(data);
+        project.revised(projectRevision);
+//        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, projectRevision);
+//        this.reviseProjectSagaDataSagaManager.create(data);
         return project;
     }
 

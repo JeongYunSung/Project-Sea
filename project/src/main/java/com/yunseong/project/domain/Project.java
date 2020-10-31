@@ -72,11 +72,11 @@ public class Project {
 
     public List<ProjectEvent> revised(ProjectRevision projectRevision) {
         switch (this.projectState) {
-            case REVISION_PENDING:
+            case POSTED:
                 this.projectState = ProjectState.POSTED;
                 this.subject = projectRevision.getSubject();
                 this.content = projectRevision.getContent();
-                this.projectTheme = projectRevision.getProjectTheme();
+                this.projectTheme = projectRevision.getTheme();
                 return Collections.emptyList();
             default:
                 throw new UnsupportedStateTransitionException(this.projectState);

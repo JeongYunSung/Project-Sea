@@ -2,6 +2,7 @@ package com.yunseong.notification.controller;
 
 import com.yunseong.notification.domain.Notification;
 import com.yunseong.notification.service.NotificationService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,10 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
+@AllArgsConstructor
 public class NotificationController {
 
-    @Autowired
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     @GetMapping("/search")
     public ResponseEntity<PagedModel> findByUsername(@RequestBody String username, @PageableDefault Pageable pageable) {

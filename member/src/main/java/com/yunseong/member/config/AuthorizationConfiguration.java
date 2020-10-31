@@ -2,7 +2,6 @@ package com.yunseong.member.config;
 
 import com.yunseong.member.service.MemberDetailsService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,7 +12,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 @Configuration
@@ -60,7 +58,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 
     @Bean
     public TokenStore tokenStore() {
-        return new InMemoryTokenStore();
+        return new IpTokenStore();
     }
 
     @Bean

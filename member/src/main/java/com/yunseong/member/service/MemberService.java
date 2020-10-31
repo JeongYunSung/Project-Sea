@@ -5,11 +5,11 @@ import com.yunseong.member.domain.MemberRepository;
 import io.eventuate.tram.events.publisher.DomainEventPublisher;
 import io.eventuate.tram.events.publisher.ResultWithEvents;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityNotFoundException;
 
 @Service
 @Transactional
@@ -17,9 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-
     private final DomainEventPublisher domainEventPublisher;
-
     private final PasswordEncoder passwordEncoder;
 
     public ResultWithEvents<Member> signUp(String username, String password, String nickname) {
@@ -31,12 +29,23 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public Member findMember(String username) {
-        return this.memberRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("해당 유저는 존재하지않습니다."));
+        return getMember(username);
+    }
+
+    private Member getMember(String username) {
+        return this.memberRepository.findByUsername(username).orElseThrow(() -> new EntityNotFoundException("해당 유저는 존재하지않습니다."));
     }
 
     public String changeNickname(String username, String nickname) {
-        Member member = this.memberRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("해당 유저는 존재하지않습니다."));
+        Member member = getMember(username);
         member.changeNickname(nickname);
         return member.getUsername();
+    }
+
+    public boolean authenticate(String username) {
+        Member member = this.getMember(username);
+        if(member.isAuthenticated()) throw new AlreadyAuthenticatedUsernameException();
+        member.authenticate();
+        return member.isAuthenticated();
     }
 }

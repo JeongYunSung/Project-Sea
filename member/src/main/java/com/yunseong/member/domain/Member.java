@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"username", "nickname"}))
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
@@ -25,18 +24,20 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false, updatable = false)
-    private String username; // 유저네임을 이메일로 받을예정
+    @Column(nullable = false, updatable = false, unique = true)
+    private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nickname;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private Permission permission;
+
+    private boolean isAuthenticated;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
@@ -51,6 +52,7 @@ public class Member {
         this.password = password;
         this.nickname = nickname;
         this.permission = Permission.USER;
+        this.isAuthenticated = false;
     }
 
     public static ResultWithEvents<Member> create(String username, String password, String nickname) {
@@ -59,5 +61,9 @@ public class Member {
 
     public void changeNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void authenticate() {
+        this.isAuthenticated = true;
     }
 }

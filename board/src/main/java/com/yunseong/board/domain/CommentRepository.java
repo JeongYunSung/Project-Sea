@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long>, CommentQueryRepository {
 
-    @Query(value = "select distinct c from Comment c join c.board b left join c.originalComment oc where c.isDelete = false and b.id = :id " +
+    @Query(value = "select c from Comment c join c.board b left join c.originalComment oc where c.isDelete = false and b.id = :id " +
             "order by coalesce(oc.id, c.id) asc, c.id asc", countQuery = "select c from Comment c join c.board b where c.isDelete = false and b.id = :id")
     Page<Comment> findPage2(long id, Pageable pageable);
 

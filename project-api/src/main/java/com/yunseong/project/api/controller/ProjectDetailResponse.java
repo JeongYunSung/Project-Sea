@@ -9,11 +9,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ProjectDetailResponse {
 
-    private long id;
-    private String subject;
-    private String content;
-    private long teamId;
-    private Long weClassId;
-    private ProjectTheme projectTheme;
-    private ProjectState projectState;
+    private final long id;
+    private final String subject;
+    private final String content;
+    private final long teamId;
+    private final Long weClassId;
+    private final ProjectTheme projectTheme;
+    private final ProjectState projectState;
 }

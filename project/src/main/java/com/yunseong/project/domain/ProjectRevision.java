@@ -13,5 +13,5 @@ public class ProjectRevision {
 
     private String subject;
     private String content;
-    private ProjectTheme projectTheme;
+    private ProjectTheme theme;
 }

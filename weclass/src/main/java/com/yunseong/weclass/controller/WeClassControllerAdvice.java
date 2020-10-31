@@ -14,23 +14,23 @@ import javax.persistence.EntityNotFoundException;
 public class WeClassControllerAdvice {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
-        errors.reject("reduplication", exception.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        errors.reject("reduplication", "해당 위클래스는 이미 존재합니다.");
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity handleEntityNotFoundException(EntityNotFoundException exception) {
+    public ResponseEntity<?> handleEntityNotFoundException(EntityNotFoundException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
         errors.reject("notFound", exception.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 
     @ExceptionHandler(DifferentOwnerException.class)
-    public ResponseEntity handleDifferentOwnerException(DifferentOwnerException exception) {
+    public ResponseEntity<?> handleDifferentOwnerException(DifferentOwnerException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
         errors.reject("differentOwner", exception.getMessage());
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 }

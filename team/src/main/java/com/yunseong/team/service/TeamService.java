@@ -6,6 +6,7 @@ import com.yunseong.team.domain.Team;
 import com.yunseong.team.domain.TeamDomainEventPublisher;
 import com.yunseong.team.domain.TeamRejectException;
 import com.yunseong.team.domain.TeamRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,12 +19,11 @@ import java.util.function.BiFunction;
 
 @Service
 @Transactional
+@AllArgsConstructor
 public class TeamService {
 
-    @Autowired
-    private TeamRepository teamRepository;
-    @Autowired
-    private TeamDomainEventPublisher teamDomainEventPublisher;
+    private final TeamRepository teamRepository;
+    private final TeamDomainEventPublisher teamDomainEventPublisher;
 
     public Team createTeam(long projectId, String username, int minSize, int maxSize) {
         return this.teamRepository.save(new Team(projectId, username, minSize, maxSize));

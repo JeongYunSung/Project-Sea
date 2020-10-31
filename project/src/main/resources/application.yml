@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    include: db
+    include: db, oauth2
   jpa:
     open-in-view: false
     hibernate:

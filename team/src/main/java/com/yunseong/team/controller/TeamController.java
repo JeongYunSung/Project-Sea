@@ -1,6 +1,7 @@
 package com.yunseong.team.controller;
 
 import com.yunseong.common.AES256Util;
+import com.yunseong.common.NotMatchedCryptException;
 import com.yunseong.project.api.controller.TeamBasicResponse;
 import com.yunseong.project.api.controller.TeamDetailResponse;
 import com.yunseong.project.api.controller.TeamVoteRequest;
@@ -8,6 +9,7 @@ import com.yunseong.project.api.event.TeamMemberDetail;
 import com.yunseong.team.domain.Team;
 import com.yunseong.team.domain.TeamMember;
 import com.yunseong.team.service.TeamService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,15 +26,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/teams", consumes = MediaType.APPLICATION_JSON_VALUE)
+@AllArgsConstructor
 public class TeamController {
 
-    @Autowired
-    private TeamService teamService;
-    @Autowired
-    private AES256Util aes256Util;
+    private final TeamService teamService;
+    private final AES256Util aes256Util;
 
     @GetMapping(value = "/search")
-    public ResponseEntity<PagedModel> findTeamByUsername(@ModelAttribute TeamSearchCondition teamSearchCondition, @PageableDefault Pageable pageable) {
+    public ResponseEntity<PagedModel<TeamBasicResponse>> findTeamByUsername(@ModelAttribute TeamSearchCondition teamSearchCondition, @PageableDefault Pageable pageable) {
         Page<TeamBasicResponse> page = this.teamService.findTeamByUsername(teamSearchCondition.getUsername(), pageable).map(TeamBasicResponse::new);
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
 
@@ -40,25 +41,20 @@ public class TeamController {
     }
 
     @PutMapping(value = "/join/accept")
-    public ResponseEntity authorizeAcceptTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
+    public ResponseEntity<?> authorizeAcceptTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
         String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
-        if(decrypt.length != 2) return ResponseEntity.badRequest().body("잘못된 토큰값입니다.");
+        if(decrypt.length != 2) throw new NotMatchedCryptException("잘못된 토큰 값입니다.");
         this.teamService.accept(Long.parseLong(decrypt[0]), decrypt[1]);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/join/reject")
-    public ResponseEntity authorizeRejectTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
+    public ResponseEntity<?> authorizeRejectTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
         String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
-        if(decrypt.length != 2) return ResponseEntity.badRequest().body("잘못된 토큰값입니다.");
+        if(decrypt.length != 2) throw new NotMatchedCryptException("잘못된 토큰 값입니다.");
         this.teamService.reject(Long.parseLong(decrypt[0]), decrypt[1]);
         return ResponseEntity.noContent().build();
     }
-
-//    @PostMapping
-//    public ResponseEntity<TeamCreateResponse> createTeam(@RequestBody TeamCreateRequest teamCreateRequest) {
-//        return new ResponseEntity<>(new TeamCreateResponse(this.teamService.createTeam(teamCreateRequest.getUsername(), teamCreateRequest.getMinSize(), teamCreateRequest.getMaxSize()).getId()), HttpStatus.CREATED);
-//    }
 
     @PutMapping(value = "/quit/{id}")
     public ResponseEntity<TeamJoinResponse> quitTeam(@PathVariable Long id, @RequestBody TeamUpdateRequest teamUpdateRequest) {

@@ -38,10 +38,10 @@ public class ProjectController {
     }
 
     @GetMapping(value = "/search")
-    public ResponseEntity<PagedModel> searchProject(@ModelAttribute ProjectSearchCondition projectSearchCondition, @PageableDefault Pageable pageable) {
+    public ResponseEntity<PagedModel<ProjectSearchResponse>> searchProject(@ModelAttribute ProjectSearchCondition projectSearchCondition, @PageableDefault Pageable pageable) {
         Page<ProjectSearchResponse> page = this.projectService.findBySearch(projectSearchCondition, pageable).map(p -> new ProjectSearchResponse(p.getId(), p.getSubject(), p.getProjectTheme(), p.getProjectState(), p.getCreatedDate()));
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
-        PagedModel model = PagedModel.of(page.getContent(), pageMetadata);
+        PagedModel<ProjectSearchResponse> model = PagedModel.of(page.getContent(), pageMetadata);
         return ResponseEntity.ok(model);
     }
 

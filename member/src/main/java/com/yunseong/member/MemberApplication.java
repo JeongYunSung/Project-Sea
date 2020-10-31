@@ -1,5 +1,7 @@
 package com.yunseong.member;
 
+import com.yunseong.common.CommonConfiguration;
+import com.yunseong.common.ErrorsSerializer;
 import com.yunseong.member.config.OAuth2Configuration;
 import io.eventuate.tram.spring.events.publisher.TramEventsPublisherConfiguration;
 import io.eventuate.tram.spring.jdbckafka.TramJdbcKafkaConfiguration;
@@ -9,7 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@Import({TramJdbcKafkaConfiguration.class, TramEventsPublisherConfiguration.class})
+@Import({TramJdbcKafkaConfiguration.class, TramEventsPublisherConfiguration.class, CommonConfiguration.class})
 @EnableJpaAuditing
 @SpringBootApplication
 @EnableConfigurationProperties(OAuth2Configuration.class)
