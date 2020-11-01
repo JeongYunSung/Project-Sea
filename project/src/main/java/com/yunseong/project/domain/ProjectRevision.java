@@ -14,4 +14,5 @@ public class ProjectRevision {
     private String subject;
     private String content;
     private ProjectTheme theme;
+    private boolean isPublic;
 }

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
+import java.security.Principal;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,16 +33,16 @@ public class TeamController {
     private final TeamService teamService;
     private final AES256Util aes256Util;
 
-    @GetMapping(value = "/search")
-    public ResponseEntity<PagedModel<TeamBasicResponse>> findTeamByUsername(@ModelAttribute TeamSearchCondition teamSearchCondition, @PageableDefault Pageable pageable) {
-        Page<TeamBasicResponse> page = this.teamService.findTeamByUsername(teamSearchCondition.getUsername(), pageable).map(TeamBasicResponse::new);
-        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
-
-        return ResponseEntity.ok(PagedModel.of(page.getContent(), pageMetadata));
-    }
+//    @GetMapping(value = "/search")
+//    public ResponseEntity<PagedModel<TeamBasicResponse>> findTeamByUsername(@ModelAttribute TeamSearchCondition teamSearchCondition, @PageableDefault Pageable pageable) {
+//        Page<TeamBasicResponse> page = this.teamService.findTeamByUsername(teamSearchCondition.getUsername(), pageable).map(TeamBasicResponse::new);
+//        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
+//
+//        return ResponseEntity.ok(PagedModel.of(page.getContent(), pageMetadata));
+//    }
 
     @PutMapping(value = "/join/accept")
-    public ResponseEntity<?> authorizeAcceptTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
+    public ResponseEntity<?> authorizeAcceptTeam(@RequestBody TeamVoteRequest teamVoteRequest) {
         String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
         if(decrypt.length != 2) throw new NotMatchedCryptException("잘못된 토큰 값입니다.");
         this.teamService.accept(Long.parseLong(decrypt[0]), decrypt[1]);
@@ -49,7 +50,7 @@ public class TeamController {
     }
 
     @PutMapping(value = "/join/reject")
-    public ResponseEntity<?> authorizeRejectTeam(@RequestBody TeamVoteRequest teamVoteRequest) throws Exception {
+    public ResponseEntity<?> authorizeRejectTeam(@RequestBody TeamVoteRequest teamVoteRequest) {
         String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
         if(decrypt.length != 2) throw new NotMatchedCryptException("잘못된 토큰 값입니다.");
         this.teamService.reject(Long.parseLong(decrypt[0]), decrypt[1]);
@@ -57,14 +58,14 @@ public class TeamController {
     }
 
     @PutMapping(value = "/quit/{id}")
-    public ResponseEntity<TeamJoinResponse> quitTeam(@PathVariable Long id, @RequestBody TeamUpdateRequest teamUpdateRequest) {
-        Team team = this.teamService.quitTeam(id, teamUpdateRequest.getUsername());
+    public ResponseEntity<TeamJoinResponse> quitTeam(@PathVariable Long id, Principal principal) {
+        Team team = this.teamService.quitTeam(id, principal.getName());
         return ResponseEntity.ok(new TeamJoinResponse(team.getId()));
     }
 
     @PutMapping(value = "/join/{id}")
-    public ResponseEntity<TeamJoinResponse> joinTeam(@PathVariable Long id, @RequestBody TeamUpdateRequest teamUpdateRequest) {
-        Team team = this.teamService.joinTeam(id, teamUpdateRequest.getUsername());
+    public ResponseEntity<TeamJoinResponse> joinTeam(@PathVariable Long id, Principal principal) {
+        Team team = this.teamService.joinTeam(id, principal.getName());
         return ResponseEntity.ok(new TeamJoinResponse(team.getId()));
     }
 

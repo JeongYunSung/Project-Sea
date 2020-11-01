@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping(value = "/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
@@ -19,9 +21,9 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @GetMapping("/search")
-    public ResponseEntity<PagedModel> findByUsername(@RequestBody String username, @PageableDefault Pageable pageable) {
-        Page<NotificationBasicResponse> page = this.notificationService.findByUsername(username, pageable).map(n -> new NotificationBasicResponse(n.getId(), n.getSubject(), n.isRead()));
+    @GetMapping("/me")
+    public ResponseEntity<PagedModel<NotificationBasicResponse>> findByUsername(Principal principal, @PageableDefault Pageable pageable) {
+        Page<NotificationBasicResponse> page = this.notificationService.findByUsername(principal.getName(), pageable).map(n -> new NotificationBasicResponse(n.getId(), n.getSubject(), n.isRead()));
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
         return ResponseEntity.ok(PagedModel.of(page.getContent(), pageMetadata));
     }

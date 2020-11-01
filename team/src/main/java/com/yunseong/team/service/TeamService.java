@@ -7,7 +7,6 @@ import com.yunseong.team.domain.TeamDomainEventPublisher;
 import com.yunseong.team.domain.TeamRejectException;
 import com.yunseong.team.domain.TeamRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +32,12 @@ public class TeamService {
 //        getTeamByTeamId(teamId).setProject(projectId);
 //    }
 
+    @Transactional(readOnly = true)
+    public boolean isLeader(long teamId, String username) {
+        Team teamByTeamId = this.getTeamByTeamId(teamId);
+        return teamByTeamId.isLeader(username);
+    }
+
     public Team updateTeam(long teamId, String username, BiFunction<Team, String, List<TeamEvent>> handler) throws EntityNotFoundException {
         Team team = getTeamByTeamId(teamId);
         isUser(team, username);
@@ -41,12 +46,12 @@ public class TeamService {
         return team;
     }
 
-    public Team accept(long teamId, String username) throws EntityNotFoundException {
-        return updateTeam(teamId, username, Team::memberApprove);
+    public void accept(long teamId, String username) throws EntityNotFoundException {
+        updateTeam(teamId, username, Team::memberApprove);
     }
 
-    public Team reject(long teamId, String username) throws EntityNotFoundException {
-        return updateTeam(teamId, username, Team::memberReject);
+    public void reject(long teamId, String username) throws EntityNotFoundException {
+        updateTeam(teamId, username, Team::memberReject);
     }
 
     public Team quitTeam(long teamId, String username) throws EntityNotFoundException {

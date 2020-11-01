@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WeClassReportUpdateRequest {
 
-    private String writer;
     private String subject;
     private String content;
 }

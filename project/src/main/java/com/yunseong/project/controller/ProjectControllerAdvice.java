@@ -1,6 +1,8 @@
 package com.yunseong.project.controller;
 
+import com.yunseong.common.AlreadyExistedElementException;
 import com.yunseong.common.UnsupportedStateTransitionException;
+import com.yunseong.project.service.CannotReadBecausePrivateProjectException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -12,6 +14,20 @@ import javax.persistence.EntityNotFoundException;
 
 @RestControllerAdvice
 public class ProjectControllerAdvice {
+
+    @ExceptionHandler(AlreadyExistedElementException.class)
+    public ResponseEntity<?> handleAlreadyExistedElementException(AlreadyExistedElementException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.rejectValue("username", exception.getMessage());
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
+    }
+
+    @ExceptionHandler(CannotReadBecausePrivateProjectException.class)
+    public ResponseEntity<?> handleCannotReadBecausePrivateProjectException(CannotReadBecausePrivateProjectException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.reject("reduplication", exception.getMessage());
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
+    }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {

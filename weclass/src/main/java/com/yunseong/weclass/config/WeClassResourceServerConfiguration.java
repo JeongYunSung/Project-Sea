@@ -36,10 +36,10 @@ public class WeClassResourceServerConfiguration extends ResourceServerConfigurer
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/class/**").access("#oauth2.hasScope('class_read')")
-                .antMatchers(HttpMethod.PUT, "/class/**").access("#oauth2.hasScope('class_write')")
-                .antMatchers(HttpMethod.DELETE, "/class/**").access("#oauth2.hasScope('class_write')")
-                .antMatchers(HttpMethod.POST, "/class/**").access("#oauth2.hasScope('class_write')")
+                .antMatchers(HttpMethod.GET, "/classes/**").access("#oauth2.hasScope('class_read')")
+                .antMatchers(HttpMethod.PUT, "/classes/**").access("#oauth2.hasScope('class_write')")
+                .antMatchers(HttpMethod.DELETE, "/classes/**").access("#oauth2.hasScope('class_write')")
+                .antMatchers(HttpMethod.POST, "/classes/**").access("#oauth2.hasScope('class_write')")
                 .anyRequest().authenticated();
     }
 

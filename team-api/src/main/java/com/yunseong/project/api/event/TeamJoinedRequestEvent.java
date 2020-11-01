@@ -13,5 +13,6 @@ import java.util.List;
 public class TeamJoinedRequestEvent implements TeamEvent {
 
     private Long projectId;
+    private String username;
     private List<TeamMemberDetail> teamMembers;
 }

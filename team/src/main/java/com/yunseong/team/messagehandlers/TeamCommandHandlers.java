@@ -28,6 +28,7 @@ public class TeamCommandHandlers {
                 .onMessage(ApproveTeamCommand.class, this::approveTeam)
                 .onMessage(RejectTeamCommand.class, this::rejectTeam)
 
+                .onMessage(IsLeaderTeamCommand.class, this::isLeaderTeam)
                 .onMessage(CancelTeamCommand.class, this::cancelTeam)
                 .build();
     }
@@ -40,6 +41,13 @@ public class TeamCommandHandlers {
         } catch (Exception e) {
             return withFailure();
         }
+    }
+
+    private Message isLeaderTeam(CommandMessage<IsLeaderTeamCommand> commandMessage) {
+        if(this.teamService.isLeader(commandMessage.getCommand().getTeamId(), commandMessage.getCommand().getUsername()))
+            return withSuccess();
+        else
+            return withFailure();
     }
 
     private Message cancelTeam(CommandMessage<CancelTeamCommand> commandMessage) {

@@ -1,5 +1,7 @@
 package com.yunseong.project.domain;
 
+import com.yunseong.common.AlreadyExistedElementException;
+import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.api.event.*;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
@@ -13,7 +15,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -32,6 +36,8 @@ public class Project {
     @Column(nullable = false)
     private String content;
 
+    private String writer;
+
     private Long teamId;
 
     private Long weClassId;
@@ -43,54 +49,66 @@ public class Project {
     @Enumerated(EnumType.STRING)
     private ProjectTheme projectTheme;
 
+    private boolean isPublic;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(joinColumns = @JoinColumn(name = "project_id"))
+    @Column(name = "username")
+    private Set<String> members = new HashSet<>();
+
     @CreatedDate
     private LocalDateTime createdDate;
 
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-    public Project(String subject, String content, ProjectTheme projectTheme) {
+    public Project(String subject, String content, String writer, ProjectTheme projectTheme, boolean isPublic) {
         this.subject = subject;
         this.content = content;
+        this.writer = writer;
         this.projectTheme = projectTheme;
         this.projectState = ProjectState.POST_PENDING;
+        this.isPublic = isPublic;
     }
 
-    public static ResultWithDomainEvents<Project, ProjectEvent> create(String subject, String content, ProjectTheme projectTheme) {
-        return new ResultWithDomainEvents<>(new Project(subject, content, projectTheme), new ProjectCreatedEvent(new ProjectDetail(subject, content)));
+    public static ResultWithDomainEvents<Project, ProjectEvent> create(String subject, String content, String writer, ProjectTheme projectTheme, boolean isPublic) {
+        return new ResultWithDomainEvents<>(new Project(subject, content, writer, projectTheme, isPublic), new ProjectCreatedEvent(new ProjectDetail(subject, content)));
+    }
+
+    public void addMember(String username) {
+        if(!this.members.add(username)) throw new AlreadyExistedElementException("이미 당신은 팀에 속해있습니다.");
+    }
+
+    public void removeMember(String username) {
+        this.members.remove(username);
     }
 
     public List<ProjectEvent> revise() {
-        switch (this.projectState) {
-            case POSTED:
-                this.projectState = ProjectState.REVISION_PENDING;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+        if (this.projectState == ProjectState.POSTED) {
+            this.projectState = ProjectState.REVISION_PENDING;
+            return Collections.emptyList();
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
-    public List<ProjectEvent> revised(ProjectRevision projectRevision) {
-        switch (this.projectState) {
-            case POSTED:
-                this.projectState = ProjectState.POSTED;
-                this.subject = projectRevision.getSubject();
-                this.content = projectRevision.getContent();
-                this.projectTheme = projectRevision.getTheme();
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+    public List<ProjectEvent> revised(String username, ProjectRevision projectRevision) {
+        if (this.projectState == ProjectState.POSTED) {
+            if(!username.equals(this.writer)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
+            this.subject = projectRevision.getSubject();
+            this.content = projectRevision.getContent();
+            this.projectTheme = projectRevision.getTheme();
+            this.isPublic = projectRevision.isPublic();
+            return Collections.emptyList();
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
     public List<ProjectEvent> cancel() {
-        switch (this.projectState) {
-            case POSTED:
-                this.projectState = ProjectState.CANCEL_PENDING;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+        if (this.projectState == ProjectState.POSTED) {
+            this.projectState = ProjectState.CANCEL_PENDING;
+            return Collections.emptyList();
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
     public List<ProjectEvent> undoCancelOrPostedOrRevision() {
@@ -114,64 +132,52 @@ public class Project {
     }
 
     public List<ProjectEvent> close() {
-        switch(this.projectState) {
-            case POSTED:
-                this.projectState = ProjectState.CLOSED;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+        if (this.projectState == ProjectState.POSTED) {
+            this.projectState = ProjectState.CLOSED;
+            return Collections.emptyList();
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
     public List<ProjectEvent> reject() {
-        switch(this.projectState) {
-            case CLOSED:
-                this.projectState = ProjectState.REJECTED;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+        if (this.projectState == ProjectState.CLOSED) {
+            this.projectState = ProjectState.REJECTED;
+            return Collections.emptyList();
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
     public List<ProjectEvent> start() {
-        switch(this.projectState) {
-            case CLOSED:
-                this.projectState = ProjectState.STARTED;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+        if (this.projectState == ProjectState.CLOSED) {
+            this.projectState = ProjectState.STARTED;
+            return Collections.emptyList();
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
-    public List<ProjectEvent> registerTeam(long teamId) {
-        switch(this.projectState) {
-            case POST_PENDING:
-                this.teamId = teamId;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+    public void registerTeam(long teamId) {
+        if (this.projectState == ProjectState.POST_PENDING) {
+            this.teamId = teamId;
+            return;
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
-    public List<ProjectEvent> registerWeClass(long weClassId) {
-        switch(this.projectState) {
-            case CLOSED:
-                this.weClassId = weClassId;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+    public void registerWeClass(long weClassId) {
+        if (this.projectState == ProjectState.CLOSED) {
+            this.weClassId = weClassId;
+            return;
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 
     public List<ProjectEvent> modifyProject(String subject, String content, ProjectTheme projectTheme) {
-        switch (this.projectState) {
-            case POSTED:
-                this.subject = subject;
-                this.content = content;
-                this.projectTheme = projectTheme;
-                return Collections.emptyList();
-            default:
-                throw new UnsupportedStateTransitionException(this.projectState);
+        if (this.projectState == ProjectState.POSTED) {
+            this.subject = subject;
+            this.content = content;
+            this.projectTheme = projectTheme;
+            return Collections.emptyList();
         }
+        throw new UnsupportedStateTransitionException(this.projectState);
     }
 }

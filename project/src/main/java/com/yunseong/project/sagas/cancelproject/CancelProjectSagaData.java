@@ -11,4 +11,6 @@ import lombok.NoArgsConstructor;
 public class CancelProjectSagaData {
 
     private long projectId;
+    private long teamId;
+    private String username;
 }

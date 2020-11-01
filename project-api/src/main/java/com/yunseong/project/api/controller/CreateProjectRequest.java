@@ -9,10 +9,10 @@ import lombok.*;
 @AllArgsConstructor
 public class CreateProjectRequest {
 
-    private String username;
     private String subject;
     private String content;
     private ProjectTheme projectTheme;
     private int minSize;
     private int maxSize;
+    private boolean isPublic;
 }

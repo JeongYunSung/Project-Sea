@@ -13,16 +13,18 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
-@RequestMapping(value = "/class", consumes = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/classes", consumes = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class WeClassController {
 
     private final WeClassService weClassService;
 
     @PostMapping("/{id}/report")
-    public ResponseEntity<Long> createReport(@PathVariable long id, CreateReportRequest reportRequest) {
-        WeClass report = this.weClassService.createReport(id, reportRequest.getWriter(), reportRequest.getSubject(), reportRequest.getContent());
+    public ResponseEntity<Long> createReport(@PathVariable long id, CreateReportRequest reportRequest, Principal principal) {
+        WeClass report = this.weClassService.createReport(id, principal.getName(), reportRequest.getSubject(), reportRequest.getContent());
         return new ResponseEntity<>(report.getId(), HttpStatus.CREATED);
     }
 
@@ -46,8 +48,8 @@ public class WeClassController {
     }
 
     @PutMapping("/reports/{id}")
-    public ResponseEntity<?> updateReport(@PathVariable long id, @RequestBody WeClassReportUpdateRequest request) {
-        this.weClassService.update(id, request.getWriter(), request.getSubject(), request.getContent());
+    public ResponseEntity<?> updateReport(@PathVariable long id, @RequestBody WeClassReportUpdateRequest request, Principal principal) {
+        this.weClassService.update(id, principal.getName(), request.getSubject(), request.getContent());
         return ResponseEntity.noContent().build();
     }
 

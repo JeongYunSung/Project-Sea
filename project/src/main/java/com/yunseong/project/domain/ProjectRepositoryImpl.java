@@ -2,7 +2,11 @@ package com.yunseong.project.domain;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yunseong.project.api.event.ProjectState;
 import com.yunseong.project.api.event.ProjectTheme;
 import com.yunseong.project.controller.ProjectSearchCondition;
 import org.springframework.data.domain.Page;
@@ -26,10 +30,17 @@ public class ProjectRepositoryImpl implements ProjectQueryRepository {
 
     @Override
     public Page<Project> findBySearch(ProjectSearchCondition projectSearchCondition, Pageable pageable) {
-        QueryResults<Project> result = this.jpaQueryFactory
+        StringPath usernames = Expressions.stringPath("usernames");
+        JPAQuery<Project> from = this.jpaQueryFactory
                 .select(project)
                 .from(project)
-                .where(eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getProjectTheme()))
+                .innerJoin(project.members, usernames);
+        if(projectSearchCondition.getProjectState() != ProjectState.POSTED) {
+            from.where(project.isPublic.isTrue(), eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getProjectTheme()));
+        }else {
+            from.where(eqProjectState(projectSearchCondition), usernames.in(projectSearchCondition.getUsername()), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getProjectTheme()));
+        }
+        QueryResults<Project> result = from
                 .orderBy(project.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

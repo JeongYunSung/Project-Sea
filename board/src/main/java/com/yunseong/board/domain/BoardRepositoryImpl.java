@@ -1,6 +1,8 @@
 package com.yunseong.board.domain;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yunseong.board.controller.BoardSearchCondition;
 import com.yunseong.board.controller.BoardSearchResponse;
@@ -27,18 +29,19 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
 
     @Override
     public Page<BoardSearchResponse> findPageByQuery(BoardSearchCondition condition, Pageable pageable) {
+        StringPath recommenders = Expressions.stringPath("recommenders");
         List<BoardSearchResponse> content = this.jpaQueryFactory
-                .select(new QBoardSearchResponse(board.id, board.subject, board.writer, board.boardCategory, board.createdTime, board.recommend.size().longValue())).distinct()
+                .select(new QBoardSearchResponse(board.id, board.subject, board.writer, board.boardCategory, board.createdTime, recommenders.count())).distinct()
                 .from(board)
                 .where(eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())
-                .leftJoin(board.recommend)
+                .leftJoin(board.recommend, recommenders)
                 .orderBy(board.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
         return PageableExecutionUtils.getPage(content, pageable,
                 this.jpaQueryFactory
-                        .select(board)
+                        .select(board.count())
                         .from(board)
                         .where(eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())::fetchCount);
     }

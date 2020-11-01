@@ -1,6 +1,6 @@
 package com.yunseong.board.domain;
 
-import com.yunseong.board.service.CannotReviseBoardIfWriterNotWereException;
+import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;

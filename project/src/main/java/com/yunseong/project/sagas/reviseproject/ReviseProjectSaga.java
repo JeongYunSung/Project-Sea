@@ -1,9 +1,12 @@
 package com.yunseong.project.sagas.reviseproject;
 
 import com.yunseong.project.api.ProjectServiceChannels;
+import com.yunseong.project.api.TeamServiceChannels;
+import com.yunseong.project.api.command.IsLeaderTeamCommand;
 import com.yunseong.project.sagaparticipants.BeginReviseProjectCommand;
 import com.yunseong.project.sagaparticipants.ConfirmReviseProjectCommand;
 import com.yunseong.project.sagaparticipants.UndoBeginReviseProjectCommand;
+import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
 import io.eventuate.tram.commands.consumer.CommandWithDestination;
 import io.eventuate.tram.sagas.orchestration.SagaDefinition;
 import io.eventuate.tram.sagas.simpledsl.SimpleSaga;
@@ -23,6 +26,8 @@ public class ReviseProjectSaga implements SimpleSaga<ReviseProjectSagaData> {
                     .invokeParticipant(this::makeBeginReviseProjectCommand)
                     .withCompensation(this::makeUndoBeginReviseProjectCommand)
                 .step()
+                    .invokeParticipant(this::isLeaderTeam)
+                .step()
                     .invokeParticipant(this::makeConfirmReviseProjectCommand)
                 .build();
     }
@@ -30,6 +35,12 @@ public class ReviseProjectSaga implements SimpleSaga<ReviseProjectSagaData> {
     @Override
     public SagaDefinition<ReviseProjectSagaData> getSagaDefinition() {
         return this.sagaDefinition;
+    }
+
+    private CommandWithDestination isLeaderTeam(ReviseProjectSagaData data) {
+        return send(new IsLeaderTeamCommand(data.getTeamId(), data.getUsername()))
+                .to(TeamServiceChannels.teamServiceChannel)
+                .build();
     }
 
     private CommandWithDestination makeBeginReviseProjectCommand(ReviseProjectSagaData data) {

@@ -36,7 +36,7 @@ public class CommentRepositoryImpl {
                 .fetch();
         return PageableExecutionUtils.getPage(result, pageable,
                 this.jpaQueryFactory
-                        .select(comment)
+                        .select(comment.count())
                         .from(comment)
                         .join(comment.board, board)
                         .where(comment.isDelete.isFalse(), board.id.eq(boardId))::fetchCount);

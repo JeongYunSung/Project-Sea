@@ -1,7 +1,8 @@
 package com.yunseong.board.domain;
 
 
-import com.yunseong.board.service.CannotReviseBoardIfWriterNotWereException;
+import com.yunseong.common.AlreadyExistedElementException;
+import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -54,7 +55,7 @@ public class Board {
     }
 
     public void addRecommend(String username) {
-        this.recommend.add(username);
+        if(!this.recommend.add(username)) throw new AlreadyExistedElementException("이미 당신은 해당 게시글을 추천하였습니다");
     }
 
     public void revise(String writer, BoardRevision boardRevision) {

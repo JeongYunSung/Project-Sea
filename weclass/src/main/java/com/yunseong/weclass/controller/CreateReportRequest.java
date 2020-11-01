@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateReportRequest {
 
-    private String writer;
     private String subject;
     private String content;
 }

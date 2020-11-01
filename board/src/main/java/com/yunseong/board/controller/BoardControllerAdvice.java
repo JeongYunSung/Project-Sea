@@ -2,7 +2,8 @@ package com.yunseong.board.controller;
 
 import com.yunseong.board.service.AlreadyRecommendedException;
 import com.yunseong.board.service.CannotRecommendByWriterException;
-import com.yunseong.board.service.CannotReviseBoardIfWriterNotWereException;
+import com.yunseong.common.AlreadyExistedElementException;
+import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +16,13 @@ import javax.persistence.EntityNotFoundException;
 
 @RestControllerAdvice
 public class BoardControllerAdvice {
+
+    @ExceptionHandler(AlreadyExistedElementException.class)
+    public ResponseEntity<?> handleAlreadyExistedElementException(AlreadyExistedElementException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.rejectValue("username", exception.getMessage());
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
+    }
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException exception) {

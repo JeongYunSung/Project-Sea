@@ -1,4 +1,4 @@
-package com.yunseong.board.service;
+package com.yunseong.common;
 
 public class CannotReviseBoardIfWriterNotWereException extends RuntimeException {
 

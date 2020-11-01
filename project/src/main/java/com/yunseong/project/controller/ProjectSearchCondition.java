@@ -15,4 +15,5 @@ public class ProjectSearchCondition {
     private String subject;
     private ProjectState projectState;
     private ProjectTheme projectTheme;
+    private String username;
 }

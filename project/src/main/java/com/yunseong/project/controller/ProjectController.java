@@ -18,6 +18,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
@@ -26,14 +28,14 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping
-    public ResponseEntity<CreateProjectResponse> createProject(@RequestBody CreateProjectRequest createProjectRequest) {
-        ResultWithDomainEvents<Project, ProjectEvent> project = this.projectService.createProject(createProjectRequest);
+    public ResponseEntity<CreateProjectResponse> createProject(@RequestBody CreateProjectRequest createProjectRequest, Principal principal) {
+        ResultWithDomainEvents<Project, ProjectEvent> project = this.projectService.createProject(principal.getName(), createProjectRequest);
         return new ResponseEntity<>(new CreateProjectResponse(project.result.getId()), HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<ProjectDetailResponse> findProject(@PathVariable long id) {
-        Project project = this.projectService.findProject(id);
+    public ResponseEntity<ProjectDetailResponse> findProject(@PathVariable long id, Principal principal) {
+        Project project = this.projectService.findProject(id, principal.getName());
         return ResponseEntity.ok(new ProjectDetailResponse(project.getId(), project.getSubject(), project.getContent(), project.getTeamId(), project.getWeClassId(), project.getProjectTheme(), project.getProjectState()));
     }
 
@@ -46,14 +48,14 @@ public class ProjectController {
     }
 
     @PutMapping(value = "/cancel/{id}")
-    public ResponseEntity<Long> cancelProject(@PathVariable long id) {
-        Project project = this.projectService.cancel(id);
+    public ResponseEntity<Long> cancelProject(@PathVariable long id, Principal principal) {
+        Project project = this.projectService.cancel(id, principal.getName());
         return ResponseEntity.ok(project.getId());
     }
 
     @PutMapping(value = "/revise/{id}")
-    public ResponseEntity<Long> reviseProject(@PathVariable long id, @RequestBody ProjectRevision projectRevision) {
-        Project project = this.projectService.revise(id, projectRevision);
+    public ResponseEntity<Long> reviseProject(@PathVariable long id, @RequestBody ProjectRevision projectRevision, Principal principal) {
+        Project project = this.projectService.revise(id, projectRevision, principal.getName());
         return ResponseEntity.ok(project.getId());
     }
 }

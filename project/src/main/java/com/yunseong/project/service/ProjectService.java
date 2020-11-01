@@ -3,6 +3,7 @@ package com.yunseong.project.service;
 import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.api.controller.CreateProjectRequest;
 import com.yunseong.project.api.event.ProjectEvent;
+import com.yunseong.project.api.event.ProjectState;
 import com.yunseong.project.controller.ProjectSearchCondition;
 import com.yunseong.project.domain.Project;
 import com.yunseong.project.domain.ProjectDomainEventPublisher;
@@ -15,7 +16,6 @@ import com.yunseong.project.sagas.startproject.StartProjectSagaState;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import io.eventuate.tram.sagas.orchestration.SagaManager;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,29 +40,27 @@ public class ProjectService {
 
     private final SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager;
 
-    private final SagaManager<ReviseProjectSagaData> reviseProjectSagaDataSagaManager;
-
-    public ResultWithDomainEvents<Project, ProjectEvent> createProject(CreateProjectRequest request) {
-        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getSubject(), request.getContent(), request.getProjectTheme());
+    public ResultWithDomainEvents<Project, ProjectEvent> createProject(String username, CreateProjectRequest request) {
+        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getSubject(), request.getContent(), username, request.getProjectTheme(), request.isPublic());
         Project project = this.projectRepository.save(rwe.result);
         this.projectDomainEventPublisher.publish(rwe.result, rwe.events);
 
-        this.createProjectSagaSagaManager.create(new CreateProjectSagaState(project.getId(), request.getUsername(), request.getMinSize(), request.getMaxSize()), Project.class, project.getId());
+        this.createProjectSagaSagaManager.create(new CreateProjectSagaState(project.getId(), username, request.getMinSize(), request.getMaxSize()), Project.class, project.getId());
 
         return rwe;
     }
 
-    public Project cancel(long projectId) throws EntityNotFoundException {
-        Project project = this.findProject(projectId);
-        CancelProjectSagaData data = new CancelProjectSagaData(projectId);
+    public Project cancel(long projectId, String username) throws EntityNotFoundException {
+        Project project = this.getProject(projectId);
+        CancelProjectSagaData data = new CancelProjectSagaData(projectId, project.getTeamId(), username);
         this.cancelProjectSagaDataSagaManager.create(data);
         return project;
     }
 
-    public Project revise(long projectId, ProjectRevision projectRevision) throws EntityNotFoundException {
-        Project project = this.findProject(projectId);
-        project.revised(projectRevision);
-//        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, projectRevision);
+    public Project revise(long projectId, ProjectRevision projectRevision, String username) throws EntityNotFoundException {
+        Project project = this.getProject(projectId);
+        project.revised(username, projectRevision);
+//        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, project.getTeamId(), projectRevision, username);
 //        this.reviseProjectSagaDataSagaManager.create(data);
         return project;
     }
@@ -78,10 +76,9 @@ public class ProjectService {
     }
 
 
-    private Project updateProject(long projectId, Function<Project, List<ProjectEvent>> func) {
-        Project project = findProject(projectId);
+    private void updateProject(long projectId, Function<Project, List<ProjectEvent>> func) {
+        Project project = getProject(projectId);
         this.projectDomainEventPublisher.publish(project, func.apply(project));
-        return project;
     }
 
     public boolean closeProject(long projectId) {
@@ -125,8 +122,8 @@ public class ProjectService {
 
     public boolean revisedProject(long projectId, ProjectRevision projectRevision) {
         try {
-            Project project = findProject(projectId);
-            this.projectDomainEventPublisher.publish(project, project.revised(projectRevision));
+            Project project = getProject(projectId);
+            this.projectDomainEventPublisher.publish(project, project.revised("", projectRevision));
             return true;
         }catch (UnsupportedStateTransitionException e) {
             return false;
@@ -143,17 +140,33 @@ public class ProjectService {
     }
 
     public void registerTeam(long projectId, long teamId) {
-        Project project = findProject(projectId);
+        Project project = getProject(projectId);
         project.registerTeam(teamId);
     }
 
     public void registerWeClass(long projectId, long weClassId) {
-        Project project = findProject(projectId);
+        Project project = getProject(projectId);
         project.registerWeClass(weClassId);
     }
 
-    public Project findProject(long projectId) {
-        Project project = this.projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지않습니다"));
+    @Transactional(readOnly = true)
+    public Project findProject(long projectId, String username) {
+        Project project = this.getProject(projectId);
+        if(project.getProjectState() != ProjectState.POSTED && !project.isPublic() && !project.getWriter().equals(username)) {
+            throw new CannotReadBecausePrivateProjectException("해당 프로젝트는 비공개 이므로 열람할 수 없습니다");
+        }
         return project;
+    }
+
+    public void addMember(long projectId, String username) {
+        this.getProject(projectId).addMember(username);
+    }
+
+    public void removeMember(long projectId, String username) {
+        this.getProject(projectId).removeMember(username);
+    }
+
+    private Project getProject(long projectId) {
+        return this.projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지않습니다"));
     }
 }
