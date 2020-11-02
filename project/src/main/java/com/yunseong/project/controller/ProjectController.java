@@ -47,6 +47,14 @@ public class ProjectController {
         return ResponseEntity.ok(model);
     }
 
+    @GetMapping(value = "/me")
+    public ResponseEntity<PagedModel<ProjectSearchResponse>> searchProject(Principal principal, @PageableDefault Pageable pageable) {
+        Page<ProjectSearchResponse> page = this.projectService.findBySearch(new ProjectSearchCondition(null, null, null, principal.getName()), pageable).map(p -> new ProjectSearchResponse(p.getId(), p.getSubject(), p.getProjectTheme(), p.getProjectState(), p.getCreatedDate()));
+        PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
+        PagedModel<ProjectSearchResponse> model = PagedModel.of(page.getContent(), pageMetadata);
+        return ResponseEntity.ok(model);
+    }
+
     @PutMapping(value = "/cancel/{id}")
     public ResponseEntity<Long> cancelProject(@PathVariable long id, Principal principal) {
         Project project = this.projectService.cancel(id, principal.getName());

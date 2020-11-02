@@ -33,7 +33,7 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
         List<BoardSearchResponse> content = this.jpaQueryFactory
                 .select(new QBoardSearchResponse(board.id, board.subject, board.writer, board.boardCategory, board.createdTime, recommenders.count())).distinct()
                 .from(board)
-                .where(eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())
+                .where(recommendCountLoe(condition, recommenders), eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())
                 .leftJoin(board.recommend, recommenders)
                 .orderBy(board.id.desc())
                 .offset(pageable.getOffset())
@@ -44,6 +44,10 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
                         .select(board.count())
                         .from(board)
                         .where(eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())::fetchCount);
+    }
+
+    private BooleanExpression recommendCountLoe(BoardSearchCondition condition, StringPath recommenders) {
+        return (condition.getRecommendCount() != null && condition.getRecommendCount() > 0) ? recommenders.count().goe(condition.getRecommendCount()) : null;
     }
 
     private BooleanExpression containsWriter(BoardSearchCondition condition) {

@@ -15,5 +15,6 @@ public class BoardDetailResponse {
     private String subject;
     private String content;
     private BoardCategory boardCategory;
+    private long readCount;
     private long recommendCount;
 }

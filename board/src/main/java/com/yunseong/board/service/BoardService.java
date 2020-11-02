@@ -79,9 +79,9 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardDetailResponse findBoard(long id) {
-        BoardDetailResponse response = this.boardRepository.findFetchDtoById(id);
-        if(response.getSubject() == null) throw new EntityNotFoundException("해당 게시판엔티티는 존재하지않습니다.");
-        return response;
+        Board board = this.boardRepository.findFetchDtoById(id).orElseThrow(() -> new EntityNotFoundException("해당 게시판엔티티는 존재하지않습니다."));
+        board.addReadCount();
+        return new BoardDetailResponse(board.getWriter(), board.getSubject(), board.getContent(), board.getBoardCategory(), board.getReadCount(), board.getRecommend().size());
     }
 
     @Transactional(readOnly = true)

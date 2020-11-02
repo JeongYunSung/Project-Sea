@@ -30,6 +30,8 @@ public class Board {
 
     private String content;
 
+    private long readCount;
+
     @Enumerated(EnumType.STRING)
     private BoardCategory boardCategory;
 
@@ -67,5 +69,9 @@ public class Board {
     public void delete(String writer) {
         if(!this.writer.equals(writer)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 삭제할 수 없습니다");
         this.isDelete = true;
+    }
+
+    public void addReadCount() {
+        this.readCount+=1;
     }
 }

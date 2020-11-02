@@ -1,4 +1,4 @@
-package com.yunseong.board.config;
+package com.yunseong.member.config;
 
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 @Configuration
 @AllArgsConstructor
 @EnableResourceServer
-public class BoardResourceServerConfiguration extends ResourceServerConfigurerAdapter {
+public class MemberResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
     private final OAuth2Configuration oAuth2Configuration;
 
@@ -35,8 +35,8 @@ public class BoardResourceServerConfiguration extends ResourceServerConfigurerAd
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                     .authorizeRequests()
-                        .antMatchers(HttpMethod.GET, "/boards/**").permitAll()
-                        .anyRequest().authenticated();
+                        .antMatchers(HttpMethod.GET, "/members/profile/**").authenticated()
+                        .anyRequest().anonymous();
     }
 
     @Bean

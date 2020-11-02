@@ -1,5 +1,6 @@
 package com.yunseong.member.controller;
 
+import com.yunseong.common.AlreadyExistedEntityException;
 import com.yunseong.common.NotMatchedCryptException;
 import com.yunseong.member.service.AlreadyAuthenticatedUsernameException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -40,6 +41,13 @@ public class MemberControllerAdvice {
     public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
         errors.rejectValue("username", "해당 계정의 소유자는 존재하지 않습니다.");
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
+    }
+
+    @ExceptionHandler(AlreadyExistedEntityException.class)
+    public ResponseEntity<?> handleAlreadyExistedEntityException(AlreadyExistedEntityException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.reject("reduplication", exception.getMessage());
         return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 

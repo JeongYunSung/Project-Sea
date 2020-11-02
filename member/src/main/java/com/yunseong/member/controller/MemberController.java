@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.EntityNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
+import java.security.Principal;
 
 @RestController
 @AllArgsConstructor
@@ -40,14 +41,24 @@ public class MemberController {
         return ResponseEntity.ok(this.memberService.authenticate(decrypt[1]));
     }
 
-    @GetMapping(value = "/profile/{username}")
-    public ResponseEntity<MemberProfileResponse> profile(@PathVariable String username) {
-        Member member = this.memberService.findMember(username);
+    @GetMapping(value = "/is/usernames/{username}")
+    public ResponseEntity<Boolean> isUsername(@PathVariable String username) {
+        return ResponseEntity.ok(this.memberService.isMemberByUsername(username));
+    }
+
+    @GetMapping(value = "/is/nicknames/{nickname}")
+    public ResponseEntity<Boolean> isNickname(@PathVariable String nickname) {
+        return ResponseEntity.ok(this.memberService.isMemberByNickname(nickname));
+    }
+
+    @GetMapping(value = "/profile/me")
+    public ResponseEntity<MemberProfileResponse> profile(Principal principal) {
+        Member member = this.memberService.findMember(principal.getName());
         return ResponseEntity.ok(new MemberProfileResponse(member.getUsername(), member.getNickname(), member.getPermission(), member.getCreatedDate()));
     }
 
-    @PutMapping(value = "/profile/{username}")
-    public ResponseEntity<MemberResponse> update(@PathVariable String username, @RequestBody MemberUpdateRequest request) {
-        return ResponseEntity.ok(new MemberResponse(this.memberService.changeNickname(username, request.getNickname())));
+    @PutMapping(value = "/profile/me")
+    public ResponseEntity<MemberResponse> update(Principal principal, @RequestBody MemberUpdateRequest request) {
+        return ResponseEntity.ok(new MemberResponse(this.memberService.changeNickname(principal.getName(), request.getNickname())));
     }
 }

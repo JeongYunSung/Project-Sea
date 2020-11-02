@@ -12,4 +12,5 @@ public class OAuth2Configuration {
     private String jwt_secret;
     private Integer access_token_expire;
     private Integer refresh_token_expire;
+    private String token_uri;
 }

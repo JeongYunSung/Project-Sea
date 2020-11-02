@@ -54,7 +54,7 @@ public class Project {
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "username")
-    private Set<String> members = new HashSet<>();
+    private final Set<String> members = new HashSet<>();
 
     @CreatedDate
     private LocalDateTime createdDate;

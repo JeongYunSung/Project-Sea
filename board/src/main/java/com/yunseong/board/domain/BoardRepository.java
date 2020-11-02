@@ -11,6 +11,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, BoardQueryR
     @Query("select distinct b from Board b left join b.recommend br where b.id = :id and b.isDelete = false")
     Optional<Board> findFetchById(long id);
 
-    @Query("select distinct new com.yunseong.board.controller.BoardDetailResponse(b.writer, b.subject, b.content, b.boardCategory, count(br)) from Board b left join b.recommend br where b.id = :id and b.isDelete = false")
-    BoardDetailResponse findFetchDtoById(long id);
+    @Query("select distinct b from Board b left join fetch b.recommend br where b.id = :id and b.isDelete = false")
+    Optional<Board> findFetchDtoById(long id);
 }

@@ -11,27 +11,28 @@
 - Board Service : 공지사항, 자유게시판, 학과게시판등의 게시판 서비스이다
 - API Server : 여러 서비스들의 창구역할을 하는 GraphQL기반의 API Server이다
 
-현재 상황
+구현 상황
 
-- Notification Service : 특정 이벤트에 대해 알림을 발생 및 읽기, 이메일 전송 구현 어플에 알림푸쉬해주는 기능 미구현
-- Member Service : stateless와 MSA환경을 위해 OAuth2를 이용한 가입 및 로그인 구현 ( password, refresh_token 방식 ) 이메일보내기, 프로필 수정, 확인 추가 예정
-- Project Service : 프로젝트 생성(사가), 프로젝트 시작(사가), 프로젝트 거절, 프로젝트 취소(사가), 프로젝트 변경
-- Team Service : 팀 생성, 입장, 투표, 탈퇴, 조회 등 구현
-- WeClass Service : 위클래스 생성, 보고서 작성, 확인, 수정, 삭제 구현
-- Board Service : Resource서버, 이미지 업로드, 게시판 생성, 확인, 수정, 추천, 삭제, 검색 구현, 댓글은 구현중
+- Notification Service : 이벤트 발생 시 알림 저장 및 해당 내용 이메일 전송기능 구현
+- Member Service : OAuth2를 이용한 인증,인가 구현(password, refresh_token), 이메일 인증 및 프로필 수정 등 구현
+- Project Service : 사가패턴을 이용한 프로젝트 생성, 시작, 취소, 수정 구현
+- Team Service : 프로젝트 구성원 참가 및 탈퇴 프로젝트 시작 찬반투표 구현
+- WeClass Service : 클래스 공지사항, 보고서 작성, 확인 등 구현
+- Board Service : 이미지 업로드, 게시판 생성, 확인, 수정, 추천, 삭제, 검색, 댓글 및 대댓글 구현
 - QnA Service : 설계단계
-- API Server : 구현 중
+- API Server : Apollo-Server를 이용한 GraphQL, Node 서버, Proxy클래스 구현
 
 사용한 기술
 
 - Spring Boot
-- JPA & MariaDB
-- EventuateTram & Kafka
-- GraphQL
-- NodeJS & Express
+- JPA & QueryDSL & MariaDB
+- Eventuate Tram & Kafka
+- GraphQL & GraphQL-Yoga(express)
+- Typescript & Webpack
 
 도입예정 기술
 
 - Redis & CQRS
+- Batch Server
 - Docker & Kubernets
 - 헬스체크 & 중앙로깅, 콘피그 서버

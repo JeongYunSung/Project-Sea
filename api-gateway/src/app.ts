@@ -1,12 +1,19 @@
-import { GraphQLServer } from 'graphql-yoga';
+import { ApolloServer } from 'apollo-server';
 import typeDefs from "./graphql/typeDefs";
 import resolvers from './graphql/resolvers';
 import context from "./graphql/context";
+import TokenManager from "./service/TokenManager";
 
-const server = new GraphQLServer({
+const config = require('./config/my-config.json');
+
+const tokenManager: TokenManager = new TokenManager();
+
+const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context
+    context: ({req}) => {
+        return Object.assign({req}, context, {tokenManager});
+    }
 });
 
-server.start({port: 3000}, () => console.log("started")).catch(console.error);
+server.listen({host: config.host, port: config.port}).then(({url}) => console.log(`Listening at ${url}`));

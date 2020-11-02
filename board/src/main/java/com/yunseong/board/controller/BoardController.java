@@ -52,7 +52,7 @@ public class BoardController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("#oauth2.hasScope('board_write') and hasRole('ROLE_' + #request.category.writePermission.name())")
-    public ResponseEntity<Long> createBoard(@ModelAttribute BoardCreateRequest request, @RequestPart MultipartFile file, Principal principal) {
+    public ResponseEntity<Long> createBoard(@RequestBody BoardCreateRequest request, @RequestPart MultipartFile file, Principal principal) {
         Board board = this.boardService.createBoard(principal.getName(), request);
         this.fileService.save(board.getId(), file);
         return new ResponseEntity<>(board.getId(), HttpStatus.CREATED);

@@ -38,6 +38,7 @@ node_modules
 dist
 
 ### my ignore ###
+my-config.json
 application-db.yml
 application-mail.yml
 application-oauth2.yml
