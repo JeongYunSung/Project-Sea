@@ -6,13 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class TeamJoinedRequestEvent implements TeamEvent {
+public class ProjectCanceledEvent implements ProjectEvent {
 
-    private Long projectId;
-    private String username;
-    private List<TeamMemberDetail> teamMembers;
+    private long id;
+    private Set<String> usernames;
 }

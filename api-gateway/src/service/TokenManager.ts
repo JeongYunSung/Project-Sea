@@ -3,6 +3,7 @@ import Token from "./Token";
 class TokenManager {
 
     private _tokens: Map<String, Token> = new Map();
+    private _nullToken: Token = new Token('', '', '');
 
     setToken(ip: string, token: Token): void {
         this._tokens.set(ip, token);
@@ -18,6 +19,10 @@ class TokenManager {
 
     removeToken(ip: string): void {
         this._tokens.delete(ip);
+    }
+
+    getNullToken() {
+        return this._nullToken;
     }
 }
 

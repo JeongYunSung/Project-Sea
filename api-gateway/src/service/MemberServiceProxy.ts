@@ -19,16 +19,18 @@ class MemberServiceProxy {
 
     //Get
 
-    async findProfile(): Promise<any> {
+    async myProfile(token: string): Promise<any> {
         const response = await fetch(`${this.memberService}/profile/me`, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer '
+                'Authorization': `Bearer ${token}`
             }
         });
         const result = await response.json();
         if(response.status == 200) {
             return result;
+        }else if(response.status < 500 && response.status >= 400) {
+            return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
         }else {
             return new Error('Unexpected Http Status Code');
         }
@@ -78,12 +80,9 @@ class MemberServiceProxy {
         if(response.status == 200) {
             tokens.setToken(ip, new Token(result.access_token, result.refresh_token, result.scope));
             return result;
-        }else if(response.status == 400) {
-            return new Error(result.error_description);
-        }else if(response.status == 401) {
-            return new Error(result.error_description);
-        }
-        else {
+        }else if(response.status < 500 && response.status >= 400) {
+            return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
+        }else {
             return new Error('Unexpected Http Status Code');
         }
     }
@@ -95,10 +94,47 @@ class MemberServiceProxy {
                 headers: {'Content-Type': 'application/json'}
             });
         const result = await response.json();
-        if(response.status == 400) {
-            return new Error(result[0].defaultMessage);
-        }else if(response.ok) {
+        if(response.ok) {
             return result;
+        }else if(response.status < 500 && response.status >= 400) {
+            return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
+        }else {
+            return new Error('Unexpected Http Status Code');
+        }
+    }
+
+    // Put
+
+    async authenticate(token: string): Promise<any> {
+        const response = await fetch(`${this.memberService}/authenticate`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token})
+        });
+        const result = await response.json();
+        if(response.ok) {
+            return result;
+        }else if(response.status < 500 && response.status >= 400) {
+            return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
+        }else {
+            return new Error('Unexpected Http Status Code');
+        }
+    }
+
+    async reviseProfile(token: string, nickname: string): Promise<any> {
+        const response = await fetch(`${this.memberService}/profile/me`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({nickname})
+        });
+        const result = await response.json();
+        if(response.ok) {
+            return result;
+        }else if(response.status < 500 && response.status >= 400) {
+            return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
         }else {
             return new Error('Unexpected Http Status Code');
         }

@@ -1,7 +1,9 @@
 const typeDefs = `
     type Member {
         username: String,
-        nickname: String
+        nickname: String,
+        permission: String,
+        createdTime: String
     }
     
     type AccessTokenInfo {
@@ -11,7 +13,7 @@ const typeDefs = `
     }
 
     type Query {
-        member(username: String!): Member
+        myProfile: Member
         isUsername(username: String!): Boolean
         isNickname(nickname: String!): Boolean
     }
@@ -19,6 +21,8 @@ const typeDefs = `
     type Mutation {
         signUp(username: String!, nickname: String!, password: String!): Member
         signIn(username: String!, password: String!, scopes: [String!]!): AccessTokenInfo
+        authenticate(token: String!): Boolean
+        reviseProfile(nickname: String!): Member
     }
 `
 

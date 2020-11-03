@@ -1,6 +1,8 @@
 const resolves = {
     Query: {
-        member: () => '정윤성',
+        myProfile: function myProfile(_, args, context) {
+            return context.memberServiceProxy.myProfile(context.token.accessToken);
+        },
         isUsername: function isUsername(_, {username}, context) {
             return context.memberServiceProxy.isUsername(username);
         },
@@ -14,6 +16,12 @@ const resolves = {
         },
         signIn: function signIn(_, {username, password, scopes}, context) {
             return context.memberServiceProxy.signIn(username, password, scopes, context.req.ip, context.tokenManager);
+        },
+        authenticate: function authenticate(_, {token}, context) {
+            return context.memberServiceProxy.authenticate(token);
+        },
+        reviseProfile: function reviseProfile(_, {nickname}, context) {
+            return context.memberServiceProxy.reviseProfile(context.token.accessToken, nickname);
         }
     }
 }
