@@ -1,5 +1,6 @@
 package com.yunseong.project.sagas.startproject;
 
+import com.yunseong.project.sagaparticipants.BoardProxyService;
 import com.yunseong.project.sagaparticipants.ProjectProxyService;
 import com.yunseong.project.sagaparticipants.TeamProxyService;
 import com.yunseong.project.sagaparticipants.WeClassProxyService;
@@ -20,6 +21,9 @@ public class StartProjectSaga implements SimpleSaga<StartProjectSagaState> {
                 .step()
                     .invokeParticipant(teamProxyService.approve, StartProjectSagaState::makeApproveTeamCommand)
                     .withCompensation(teamProxyService.reject, StartProjectSagaState::makeRejectTeamCommand)
+                .step()
+                    .invokeParticipant(weClassProxyService.create, StartProjectSagaState::makeCreateWeClassCommand)
+                    .onReply(CreateWeClassReply.class, StartProjectSagaState::handleCreateWeClassReply)
                 .step()
                     .invokeParticipant(weClassProxyService.create, StartProjectSagaState::makeCreateWeClassCommand)
                     .onReply(CreateWeClassReply.class, StartProjectSagaState::handleCreateWeClassReply)

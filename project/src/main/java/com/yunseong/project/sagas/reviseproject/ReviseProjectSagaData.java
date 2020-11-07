@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class ReviseProjectSagaData {
 
     private long projectId;
-    private long teamId;
-    private ProjectRevision projectRevision;
+    private long boardId;
     private String username;
+    private ProjectRevision projectRevision;
 }

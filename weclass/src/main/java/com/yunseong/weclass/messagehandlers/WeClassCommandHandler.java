@@ -29,8 +29,11 @@ public class WeClassCommandHandler {
     private Message createWeClass(CommandMessage<CreateWeClassCommand> commandMessage) {
         try {
             WeClass weClass = this.weClassService.createWeClass(commandMessage.getCommand().getProjectId());
-            CreateWeClassReply reply = new CreateWeClassReply(weClass.getId());
-            return withLock(WeClass.class, weClass.getId()).withSuccess(reply);
+            if(weClass != null) {
+                CreateWeClassReply reply = new CreateWeClassReply(weClass.getId());
+                return withLock(WeClass.class, weClass.getId()).withSuccess(reply);
+            }
+            return withFailure();
         } catch (Exception e) {
             return withFailure();
         }

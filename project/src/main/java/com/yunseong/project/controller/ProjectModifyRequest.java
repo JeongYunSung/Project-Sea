@@ -1,6 +1,6 @@
 package com.yunseong.project.controller;
 
-import com.yunseong.project.api.event.ProjectTheme;
+import com.yunseong.board.api.BoardCategory;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,5 +13,5 @@ public class ProjectModifyRequest {
 
     private String subject;
     private String content;
-    private ProjectTheme projectTheme;
+    private BoardCategory boardCategory;
 }

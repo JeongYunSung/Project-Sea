@@ -11,3 +11,5 @@ include 'team'
 include 'team-api'
 include 'project-history'
 include 'board'
+include 'board-api'
+

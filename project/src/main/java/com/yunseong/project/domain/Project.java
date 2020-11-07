@@ -1,5 +1,6 @@
 package com.yunseong.project.domain;
 
+import com.yunseong.board.api.BoardDetail;
 import com.yunseong.common.AlreadyExistedElementException;
 import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import com.yunseong.common.UnsupportedStateTransitionException;
@@ -8,11 +9,15 @@ import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import java.lang.reflect.Member;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,31 +35,26 @@ public class Project {
     @Column(name = "project_id")
     private Long id;
 
-    @Column(nullable = false)
-    private String subject;
-
-    @Column(nullable = false)
-    private String content;
-
-    private String writer;
-
     private Long teamId;
+
+    private Long boardId;
 
     private Long weClassId;
 
     @Enumerated(EnumType.STRING)
     private ProjectState projectState;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ProjectTheme projectTheme;
-
-    private boolean isPublic;
+    @Embedded
+    private Board board;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(joinColumns = @JoinColumn(name = "project_id"))
-    @Column(name = "username")
     private final Set<String> members = new HashSet<>();
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate lastDate;
+
+    private boolean isPublic;
 
     @CreatedDate
     private LocalDateTime createdDate;
@@ -62,17 +62,14 @@ public class Project {
     @LastModifiedDate
     private LocalDateTime updatedDate;
 
-    public Project(String subject, String content, String writer, ProjectTheme projectTheme, boolean isPublic) {
-        this.subject = subject;
-        this.content = content;
-        this.writer = writer;
-        this.projectTheme = projectTheme;
+    public Project(boolean open, LocalDate lastDate) {
         this.projectState = ProjectState.POST_PENDING;
-        this.isPublic = isPublic;
+        this.isPublic = open;
+        this.lastDate = lastDate;
     }
 
-    public static ResultWithDomainEvents<Project, ProjectEvent> create(String subject, String content, String writer, ProjectTheme projectTheme, boolean isPublic) {
-        return new ResultWithDomainEvents<>(new Project(subject, content, writer, projectTheme, isPublic), new ProjectCreatedEvent(new ProjectDetail(subject, content)));
+    public static ResultWithDomainEvents<Project, ProjectEvent> create(boolean isPublic, LocalDate lastDate) {
+        return new ResultWithDomainEvents<>(new Project(isPublic, lastDate), new ProjectCreatedEvent());
     }
 
     public void addMember(String username) {
@@ -91,13 +88,9 @@ public class Project {
         throw new UnsupportedStateTransitionException(this.projectState);
     }
 
-    public List<ProjectEvent> revised(String username, ProjectRevision projectRevision) {
-        if (this.projectState == ProjectState.POSTED) {
-            if(!username.equals(this.writer)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
-            this.subject = projectRevision.getSubject();
-            this.content = projectRevision.getContent();
-            this.projectTheme = projectRevision.getTheme();
-            this.isPublic = projectRevision.isPublic();
+    public List<ProjectEvent> revised(ProjectSimpleRevision projectSimpleRevision) {
+        if (this.projectState == ProjectState.REVISION_PENDING) {
+            this.isPublic = projectSimpleRevision.isPublic();
             return Collections.emptyList();
         }
         throw new UnsupportedStateTransitionException(this.projectState);
@@ -125,7 +118,7 @@ public class Project {
         switch (this.projectState) {
             case CANCEL_PENDING: case POST_PENDING:
                 this.projectState = ProjectState.CANCELLED;
-                return Collections.emptyList();
+                return Collections.singletonList(new ProjectCancelledEvent(this.id, this.members));
             default:
                 throw new UnsupportedStateTransitionException(this.projectState);
         }
@@ -142,7 +135,7 @@ public class Project {
     public List<ProjectEvent> reject() {
         if (this.projectState == ProjectState.CLOSED) {
             this.projectState = ProjectState.REJECTED;
-            return Collections.emptyList();
+            return Collections.singletonList(new ProjectRejectedEvent(this.id, this.members));
         }
         throw new UnsupportedStateTransitionException(this.projectState);
     }
@@ -150,14 +143,24 @@ public class Project {
     public List<ProjectEvent> start() {
         if (this.projectState == ProjectState.CLOSED) {
             this.projectState = ProjectState.STARTED;
-            return Collections.emptyList();
+            return Collections.singletonList(new ProjectStartedEvent(this.id, this.members));
         }
         throw new UnsupportedStateTransitionException(this.projectState);
     }
 
-    public void registerTeam(long teamId) {
+    public void registerTeam(long teamId, String username) {
         if (this.projectState == ProjectState.POST_PENDING) {
             this.teamId = teamId;
+            this.members.add(username);
+            return;
+        }
+        throw new UnsupportedStateTransitionException(this.projectState);
+    }
+
+    public void registerBoard(long boardId, BoardDetail boardDetail) {
+        if (this.projectState == ProjectState.POST_PENDING) {
+            this.boardId = boardId;
+            this.board = new Board(boardDetail.getWriter(), boardDetail.getSubject(), boardDetail.getBoardCategory());
             return;
         }
         throw new UnsupportedStateTransitionException(this.projectState);
@@ -171,13 +174,8 @@ public class Project {
         throw new UnsupportedStateTransitionException(this.projectState);
     }
 
-    public List<ProjectEvent> modifyProject(String subject, String content, ProjectTheme projectTheme) {
-        if (this.projectState == ProjectState.POSTED) {
-            this.subject = subject;
-            this.content = content;
-            this.projectTheme = projectTheme;
-            return Collections.emptyList();
-        }
-        throw new UnsupportedStateTransitionException(this.projectState);
+    public boolean isWriter(String username) {
+        String name = this.members.stream().findFirst().orElseThrow(() -> new EmptyCollectionException("프로젝트의 멤버리스트가 비어있습니다."));
+        return !username.equals(name);
     }
 }

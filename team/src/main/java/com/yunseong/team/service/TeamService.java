@@ -99,6 +99,19 @@ public class TeamService {
         return this.teamRepository.findByUsername(username, pageable);
     }
 
+    public boolean batchTeam(List<Long> ids) {
+        try {
+            this.teamRepository.batchUpdate(ids);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void batchUndoTeam(List<Long> ids) {
+        this.teamRepository.batchUndoUpdate(ids);
+    }
+
     private void isUser(Team team, String username) throws EntityNotFoundException {
         if (!team.isUser(username)) throw new EntityNotFoundException("해당 유저는 해당 팀에 존재하지 않습니다.");
     }

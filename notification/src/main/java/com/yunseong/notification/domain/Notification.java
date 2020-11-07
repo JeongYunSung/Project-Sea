@@ -23,10 +23,10 @@ public class Notification {
     @Column(nullable = false, updatable = false)
     private String username;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private String subject;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)

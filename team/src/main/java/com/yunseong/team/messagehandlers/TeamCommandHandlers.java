@@ -1,6 +1,5 @@
 package com.yunseong.team.messagehandlers;
 
-import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.api.TeamServiceChannels;
 import com.yunseong.project.api.command.*;
 import com.yunseong.team.domain.Team;
@@ -30,14 +29,32 @@ public class TeamCommandHandlers {
 
                 .onMessage(IsLeaderTeamCommand.class, this::isLeaderTeam)
                 .onMessage(CancelTeamCommand.class, this::cancelTeam)
+
+                .onMessage(BatchTeamCommand.class, this::batchTeam)
+                .onMessage(BatchUndoTeamCommand.class, this::batchUndoTeam)
                 .build();
+    }
+
+    private Message batchTeam(CommandMessage<BatchTeamCommand> commandMessage) {
+        if(this.teamService.batchTeam(commandMessage.getCommand().getIds())) {
+            return withSuccess();
+        }
+        return withFailure();
+    }
+
+    private Message batchUndoTeam(CommandMessage<BatchUndoTeamCommand> commandMessage) {
+        this.teamService.batchUndoTeam(commandMessage.getCommand().getIds());
+        return withSuccess();
     }
 
     private Message createTeam(CommandMessage<CreateTeamCommand> commandMessage) {
         try {
             CreateTeamCommand command = commandMessage.getCommand();
             Team team = this.teamService.createTeam(command.getProjectId(), command.getUsername(), command.getMinSize(), command.getMaxSize());
-            return withLock(Team.class, team.getId()).withSuccess(new CreateTeamReply(team.getId()));
+            if(team != null) {
+                return withLock(Team.class, team.getId()).withSuccess(new CreateTeamReply(team.getId()));
+            }
+            return withFailure();
         } catch (Exception e) {
             return withFailure();
         }

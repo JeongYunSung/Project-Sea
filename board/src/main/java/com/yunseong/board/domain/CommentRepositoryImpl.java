@@ -1,6 +1,7 @@
 package com.yunseong.board.domain;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yunseong.board.controller.CommentReviseRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.support.PageableExecutionUtils;
@@ -14,7 +15,7 @@ import static com.yunseong.board.domain.QBoard.board;
 import static com.yunseong.board.domain.QComment.comment;
 
 @Repository
-public class CommentRepositoryImpl {
+public class CommentRepositoryImpl implements CommentQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -22,6 +23,7 @@ public class CommentRepositoryImpl {
         this.jpaQueryFactory = new JPAQueryFactory(entityManager);
     }
 
+    @Override
     public Page<Comment> findPage(long boardId, Pageable pageable) {
         QComment original = new QComment("original");
         List<Comment> result = this.jpaQueryFactory
@@ -29,7 +31,7 @@ public class CommentRepositoryImpl {
                 .from(comment)
                 .join(comment.board, board)
                 .leftJoin(comment.originalComment, original)
-                .where(comment.isDelete.isFalse(), board.id.eq(boardId))
+                .where(comment.isDelete.isFalse(), board.id.eq(boardId), board.isDelete.isFalse())
                 .orderBy(original.id.coalesce(comment.id).asc(), comment.id.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

@@ -36,8 +36,6 @@ public class NotificationService {
     @Async("mail")
     public void sendMail(String username, String subject, String content) {
         try {
-            Thread thread = Thread.currentThread();
-            System.out.println(thread.getName());
             MimeMessage mimeMessage = this.javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setFrom(mailSenderConfiguration.getUsername() + "@naver.com");

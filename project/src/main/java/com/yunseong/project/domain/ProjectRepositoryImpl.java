@@ -6,8 +6,8 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yunseong.board.api.BoardCategory;
 import com.yunseong.project.api.event.ProjectState;
-import com.yunseong.project.api.event.ProjectTheme;
 import com.yunseong.project.controller.ProjectSearchCondition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -36,9 +36,9 @@ public class ProjectRepositoryImpl implements ProjectQueryRepository {
                 .from(project)
                 .innerJoin(project.members, usernames);
         if(projectSearchCondition.getProjectState() != ProjectState.POSTED) {
-            from.where(project.isPublic.isTrue(), eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getProjectTheme()));
+            from.where(project.isPublic.isTrue(), eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getBoardCategory()));
         }else {
-            from.where(eqProjectState(projectSearchCondition), usernames.in(projectSearchCondition.getUsername()), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getProjectTheme()));
+            from.where(eqProjectState(projectSearchCondition), inUsername(projectSearchCondition, usernames), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getBoardCategory()));
         }
         QueryResults<Project> result = from
                 .orderBy(project.id.desc())
@@ -48,15 +48,19 @@ public class ProjectRepositoryImpl implements ProjectQueryRepository {
         return new PageImpl<>(result.getResults(), pageable, result.getTotal());
     }
 
+    private BooleanExpression inUsername(ProjectSearchCondition projectSearchCondition, StringPath usernames) {
+        return projectSearchCondition.getUsername() != null && StringUtils.hasText(projectSearchCondition.getSubject()) ? usernames.in(projectSearchCondition.getUsername()) : null;
+    }
+
     private BooleanExpression eqProjectState(ProjectSearchCondition projectSearchCondition) {
         return projectSearchCondition.getProjectState() != null ? project.projectState.eq(projectSearchCondition.getProjectState()) : null;
     }
 
-    private BooleanExpression equalsTheme(ProjectTheme projectTheme) {
-        return projectTheme != null ? project.projectTheme.eq(projectTheme) : null;
+    private BooleanExpression equalsTheme(BoardCategory boardCategory) {
+        return boardCategory != null ? project.board.boardCategory.eq(boardCategory) : null;
     }
 
     private BooleanExpression containsSubject(String subject) {
-        return StringUtils.hasText(subject) && !subject.equalsIgnoreCase("null") ? project.subject.contains(subject) : null;
+        return StringUtils.hasText(subject) && !subject.equalsIgnoreCase("null") ? project.board.subject.contains(subject) : null;
     }
 }

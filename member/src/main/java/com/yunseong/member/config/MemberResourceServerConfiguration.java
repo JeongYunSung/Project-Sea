@@ -35,7 +35,7 @@ public class MemberResourceServerConfiguration extends ResourceServerConfigurerA
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                     .authorizeRequests()
-                        .antMatchers(HttpMethod.GET, "/members/profile/**").authenticated()
+                        .antMatchers("/members/profile/**").authenticated()
                         .anyRequest().anonymous();
     }
 

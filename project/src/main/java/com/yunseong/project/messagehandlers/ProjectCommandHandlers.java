@@ -1,6 +1,7 @@
 package com.yunseong.project.messagehandlers;
 
 import com.yunseong.project.api.ProjectServiceChannels;
+import com.yunseong.project.domain.ProjectSimpleRevision;
 import com.yunseong.project.sagaparticipants.*;
 import com.yunseong.project.service.ProjectService;
 import io.eventuate.tram.commands.consumer.CommandHandlers;
@@ -21,6 +22,7 @@ public class ProjectCommandHandlers {
         return SagaCommandHandlersBuilder
                 .fromChannel(ProjectServiceChannels.projectServiceChannel)
                 .onMessage(RegisterTeamCommand.class, this::registerTeam)
+                .onMessage(RegisterBoardCommand.class, this::registerBoard)
                 .onMessage(CreateProjectCommand.class, this::createProject)
 
                 .onMessage(BeginReviseProjectCommand.class, this::reviseProject)
@@ -35,7 +37,30 @@ public class ProjectCommandHandlers {
                 .onMessage(BeginCancelProjectCommand.class, this::cancelProject)
                 .onMessage(UndoBeginCancelProjectCommand.class, this::undoCancelProject)
                 .onMessage(ConfirmCancelProjectCommand.class, this::confirmCancelProject)
+
+                .onMessage(BatchStartProjectCommand.class, this::startBatch)
+                .onMessage(BatchUndoProjectCommand.class, this::undoBatch)
+                .onMessage(BatchFinishedProjectCommand.class, this::finishBatch)
                 .build();
+    }
+
+    public Message startBatch(CommandMessage<BatchStartProjectCommand> cm) {
+        if(this.projectService.batchPending(cm.getCommand().getProjectIds())) {
+            return withSuccess();
+        }
+        return withFailure();
+    }
+
+    public Message undoBatch(CommandMessage<BatchUndoProjectCommand> cm) {
+        this.projectService.batchUndo(cm.getCommand().getProjectIds());
+        return withSuccess();
+    }
+
+    public Message finishBatch(CommandMessage<BatchFinishedProjectCommand> cm) {
+        if(this.projectService.batched(cm.getCommand().getProjectIds())) {
+            return withSuccess();
+        }
+        return withFailure();
     }
 
     public Message reviseProject(CommandMessage<BeginReviseProjectCommand> cm) {
@@ -52,7 +77,7 @@ public class ProjectCommandHandlers {
     }
 
     public Message confirmReviseProject(CommandMessage<ConfirmReviseProjectCommand> cm) {
-        if(this.projectService.revisedProject(cm.getCommand().getProjectId(), cm.getCommand().getProjectRevision()))
+        if(this.projectService.revisedProject(cm.getCommand().getProjectId(), new ProjectSimpleRevision(cm.getCommand().getSubject(), cm.getCommand().isPublic())))
             return withSuccess();
         return withFailure();
     }
@@ -60,7 +85,7 @@ public class ProjectCommandHandlers {
     public Message registerTeam(CommandMessage<RegisterTeamCommand> cm) {
         long projectId = cm.getCommand().getProjectId();
         long teamId = cm.getCommand().getTeamId();
-        this.projectService.registerTeam(projectId, teamId);
+        this.projectService.registerTeam(projectId, teamId, cm.getCommand().getUsername());
         return withSuccess();
     }
 
@@ -105,6 +130,13 @@ public class ProjectCommandHandlers {
         long projectId = cm.getCommand().getProjectId();
         long weClassId = cm.getCommand().getWeClassId();
         this.projectService.registerWeClass(projectId, weClassId);
+        return withSuccess();
+    }
+
+    public Message registerBoard(CommandMessage<RegisterBoardCommand> cm) {
+        long projectId = cm.getCommand().getProjectId();
+        long boardId = cm.getCommand().getBoardId();
+        this.projectService.registerBoard(projectId, boardId, cm.getCommand().getBoardDetail());
         return withSuccess();
     }
 

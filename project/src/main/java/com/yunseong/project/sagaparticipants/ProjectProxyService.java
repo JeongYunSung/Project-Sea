@@ -33,6 +33,12 @@ public class ProjectProxyService {
             .withReply(Success.class)
             .build();
 
+    public final CommandEndpoint<RegisterBoardCommand> registerBoard = CommandEndpointBuilder
+            .forCommand(RegisterBoardCommand.class)
+            .withChannel(ProjectServiceChannels.projectServiceChannel)
+            .withReply(Success.class)
+            .build();
+
     public final CommandEndpoint<RegisterWeClassCommand> registerWeClass = CommandEndpointBuilder
             .forCommand(RegisterWeClassCommand.class)
             .withChannel(ProjectServiceChannels.projectServiceChannel)

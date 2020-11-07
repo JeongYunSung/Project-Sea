@@ -1,9 +1,13 @@
 package com.yunseong.project.sagas.createproject;
 
+import com.yunseong.board.api.BoardDetail;
+import com.yunseong.board.api.command.CreateBoardCommand;
+import com.yunseong.board.api.command.CreateBoardReply;
 import com.yunseong.project.api.command.CreateTeamCommand;
 import com.yunseong.project.api.command.CreateTeamReply;
 import com.yunseong.project.sagaparticipants.CreateProjectCommand;
 import com.yunseong.project.sagaparticipants.ConfirmCancelProjectCommand;
+import com.yunseong.project.sagaparticipants.RegisterBoardCommand;
 import com.yunseong.project.sagaparticipants.RegisterTeamCommand;
 import lombok.*;
 
@@ -13,6 +17,7 @@ import lombok.*;
 public class CreateProjectSagaState {
 
     private long teamId;
+    private long boardId;
     @NonNull
     private Long projectId;
     @NonNull
@@ -21,6 +26,8 @@ public class CreateProjectSagaState {
     private Integer minSize;
     @NonNull
     private Integer maxSize;
+    @NonNull
+    private BoardDetail boardDetail;
 
     public ConfirmCancelProjectCommand makeProjectConfirmCancelCommand() {
         return new ConfirmCancelProjectCommand(this.projectId);
@@ -30,8 +37,20 @@ public class CreateProjectSagaState {
         return new CreateTeamCommand(this.projectId, this.username, this.minSize, this.maxSize);
     }
 
+    public CreateBoardCommand makeCreateBoardCommand() {
+        return new CreateBoardCommand(this.projectId, this.boardDetail.getWriter(), this.boardDetail.getSubject(), this.boardDetail.getContent(), this.boardDetail.getBoardCategory(), this.boardDetail.getImages());
+    }
+
+    public void handleCreateBoardReply(CreateBoardReply reply) {
+        this.boardId = reply.getBoardId();
+    }
+
+    public RegisterBoardCommand makeRegisterBoardCommand() {
+        return new RegisterBoardCommand(this.projectId, this.boardId, this.boardDetail);
+    }
+
     public RegisterTeamCommand makeRegisterTeamCommand() {
-        return new RegisterTeamCommand(this.projectId, this.teamId);
+        return new RegisterTeamCommand(this.projectId, this.username, this.teamId);
     }
 
     public CreateProjectCommand makeCreateProjectCommand() {

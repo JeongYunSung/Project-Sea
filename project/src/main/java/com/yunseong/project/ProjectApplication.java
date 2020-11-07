@@ -8,7 +8,9 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 @EnableJpaAuditing
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
 @Import({ProjectServiceConfiguration.class})

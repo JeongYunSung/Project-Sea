@@ -1,5 +1,6 @@
 package com.yunseong.project.domain;
 
+import com.yunseong.board.api.BoardCategory;
 import com.yunseong.project.api.event.ProjectTheme;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,6 @@ public class ProjectRevision {
 
     private String subject;
     private String content;
-    private ProjectTheme theme;
-    private boolean isPublic;
+    private BoardCategory category;
+    private boolean open;
 }

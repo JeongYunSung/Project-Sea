@@ -36,10 +36,11 @@ public class ProjectResourceServerConfiguration extends ResourceServerConfigurer
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                     .authorizeRequests()
-                    .antMatchers(HttpMethod.GET, "/projects/**").access("#oauth2.hasScope('project_read')")
-                    .antMatchers(HttpMethod.PUT, "/projects/**").access("#oauth2.hasScope('project_write')")
-                    .antMatchers(HttpMethod.POST, "/projects").access("#oauth2.hasScope('project_write')")
-                .anyRequest().authenticated();
+                    .antMatchers(HttpMethod.GET, "/projects/**").permitAll()
+                    .anyRequest().authenticated();
+//                    .antMatchers(HttpMethod.GET, "/projects/**").access("#oauth2.hasScope('project_read')")
+//                    .antMatchers(HttpMethod.PUT, "/projects/**").access("#oauth2.hasScope('project_write')")
+//                    .antMatchers(HttpMethod.POST, "/projects").access("#oauth2.hasScope('project_write')")
     }
 
     @Bean

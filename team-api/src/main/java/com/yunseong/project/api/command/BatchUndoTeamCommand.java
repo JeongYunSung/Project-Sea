@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class BatchTeamCommand implements Command {
+public class BatchUndoTeamCommand implements Command {
 
     private List<Long> ids;
 }

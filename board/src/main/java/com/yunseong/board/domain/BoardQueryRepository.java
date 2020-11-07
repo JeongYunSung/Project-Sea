@@ -7,5 +7,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface BoardQueryRepository {
 
-    Page<BoardSearchResponse> findPageByQuery(BoardSearchCondition condition, Pageable pageable);
+    Page<Board> findPageByQuery(BoardSearchCondition condition, Pageable pageable);
 }

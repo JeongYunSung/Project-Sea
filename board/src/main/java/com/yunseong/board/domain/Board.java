@@ -1,6 +1,7 @@
 package com.yunseong.board.domain;
 
 
+import com.yunseong.board.api.BoardCategory;
 import com.yunseong.common.AlreadyExistedElementException;
 import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import lombok.*;
@@ -28,9 +29,12 @@ public class Board {
 
     private String subject;
 
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
     private String content;
 
     private long readCount;
+
+    private boolean isDifferent;
 
     @Enumerated(EnumType.STRING)
     private BoardCategory boardCategory;
@@ -48,11 +52,13 @@ public class Board {
 
     private boolean isDelete;
 
-    public Board(String writer, String subject, String content, BoardCategory boardCategory) {
+    public Board(String writer, String subject, String content, BoardCategory boardCategory, boolean isDifferent) {
         this.writer = writer;
         this.subject = subject;
         this.content = content;
         this.boardCategory = boardCategory;
+        this.isDifferent = isDifferent;
+        this.readCount = 0;
         this.isDelete = false;
     }
 

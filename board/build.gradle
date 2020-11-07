@@ -3,6 +3,7 @@ apply plugin: "com.ewerk.gradle.plugins.querydsl"
 
 dependencies {
     implementation project(":common")
+    implementation project(":board-api")
     implementation project(":member-api")
     implementation 'com.querydsl:querydsl-jpa'
     implementation 'org.mariadb.jdbc:mariadb-java-client'
@@ -12,6 +13,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-oauth2'
     implementation 'org.springframework.cloud:spring-cloud-starter-security'
+    implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.core:eventuate-tram-spring-jdbc-kafka:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-participant:${eventuateTramSagasVersion}"
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'

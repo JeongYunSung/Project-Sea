@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 
 @Service
 @Transactional
@@ -49,6 +50,7 @@ public class MemberService {
     }
 
     public String changeNickname(String username, String nickname) {
+        if(this.memberRepository.findByNickname(nickname).orElse(null) != null) throw new AlreadyExistedEntityException("해당 닉네임은 이미 존재합니다.");
         Member member = getMember(username);
         member.changeNickname(nickname);
         return member.getUsername();

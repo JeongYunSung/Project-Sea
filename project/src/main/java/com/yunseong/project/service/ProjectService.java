@@ -1,14 +1,16 @@
 package com.yunseong.project.service;
 
+import com.yunseong.board.api.BoardCategory;
+import com.yunseong.board.api.BoardDetail;
+import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.api.controller.CreateProjectRequest;
 import com.yunseong.project.api.event.ProjectEvent;
 import com.yunseong.project.api.event.ProjectState;
+import com.yunseong.project.api.event.TeamPermission;
 import com.yunseong.project.controller.ProjectSearchCondition;
-import com.yunseong.project.domain.Project;
-import com.yunseong.project.domain.ProjectDomainEventPublisher;
-import com.yunseong.project.domain.ProjectRepository;
-import com.yunseong.project.domain.ProjectRevision;
+import com.yunseong.project.domain.*;
+import com.yunseong.project.sagas.batchproject.BatchProjectSagaData;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
 import com.yunseong.project.sagas.createproject.CreateProjectSagaState;
 import com.yunseong.project.sagas.reviseproject.ReviseProjectSagaData;
@@ -20,8 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Function;
 
@@ -31,27 +35,27 @@ import java.util.function.Function;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
-
     private final ProjectDomainEventPublisher projectDomainEventPublisher;
-
     private final SagaManager<CreateProjectSagaState> createProjectSagaSagaManager;
-
     private final SagaManager<StartProjectSagaState> createWeClassSagaSagaManager;
-
     private final SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager;
+    private final SagaManager<ReviseProjectSagaData> reviseProjectSagaDataSagaManager;
+    private final SagaManager<BatchProjectSagaData> batchProjectSagaDataSagaManager;
 
-    public ResultWithDomainEvents<Project, ProjectEvent> createProject(String username, CreateProjectRequest request) {
-        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.getSubject(), request.getContent(), username, request.getProjectTheme(), request.isPublic());
+    public ResultWithDomainEvents<Project, ProjectEvent> createProject(String username, CreateProjectRequest request, MultipartFile[] files) {
+        ResultWithDomainEvents<Project, ProjectEvent> rwe = Project.create(request.isOpen(), request.getLastDate());
         Project project = this.projectRepository.save(rwe.result);
         this.projectDomainEventPublisher.publish(rwe.result, rwe.events);
 
-        this.createProjectSagaSagaManager.create(new CreateProjectSagaState(project.getId(), username, request.getMinSize(), request.getMaxSize()), Project.class, project.getId());
+        this.createProjectSagaSagaManager.create(new CreateProjectSagaState(project.getId(), username, request.getMinSize(), request.getMaxSize(),
+                new BoardDetail(username, request.getSubject(), request.getContent(), request.getCategory(), files)), Project.class, project.getId());
 
         return rwe;
     }
 
     public Project cancel(long projectId, String username) throws EntityNotFoundException {
         Project project = this.getProject(projectId);
+        if(project.isWriter(username)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
         CancelProjectSagaData data = new CancelProjectSagaData(projectId, project.getTeamId(), username);
         this.cancelProjectSagaDataSagaManager.create(data);
         return project;
@@ -59,9 +63,9 @@ public class ProjectService {
 
     public Project revise(long projectId, ProjectRevision projectRevision, String username) throws EntityNotFoundException {
         Project project = this.getProject(projectId);
-        project.revised(username, projectRevision);
-//        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, project.getTeamId(), projectRevision, username);
-//        this.reviseProjectSagaDataSagaManager.create(data);
+        if(project.isWriter(username)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
+        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, project.getBoardId(), username, projectRevision);
+        this.reviseProjectSagaDataSagaManager.create(data);
         return project;
     }
 
@@ -102,7 +106,7 @@ public class ProjectService {
         try {
             updateProject(projectId, Project::cancel);
             return true;
-        }catch (UnsupportedStateTransitionException e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -120,10 +124,10 @@ public class ProjectService {
         updateProject(projectId, Project::undoCancelOrPostedOrRevision);
     }
 
-    public boolean revisedProject(long projectId, ProjectRevision projectRevision) {
+    public boolean revisedProject(long projectId, ProjectSimpleRevision projectSimpleRevision) {
         try {
             Project project = getProject(projectId);
-            this.projectDomainEventPublisher.publish(project, project.revised("", projectRevision));
+            this.projectDomainEventPublisher.publish(project, project.revised(projectSimpleRevision));
             return true;
         }catch (UnsupportedStateTransitionException e) {
             return false;
@@ -139,9 +143,14 @@ public class ProjectService {
         }
     }
 
-    public void registerTeam(long projectId, long teamId) {
+    public void registerTeam(long projectId, long teamId, String username) {
         Project project = getProject(projectId);
-        project.registerTeam(teamId);
+        project.registerTeam(teamId, username);
+    }
+
+    public void registerBoard(long projectId, long boardId, BoardDetail boardDetail) {
+        Project project = getProject(projectId);
+        project.registerBoard(boardId, boardDetail);
     }
 
     public void registerWeClass(long projectId, long weClassId) {
@@ -152,7 +161,7 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public Project findProject(long projectId, String username) {
         Project project = this.getProject(projectId);
-        if(project.getProjectState() != ProjectState.POSTED && !project.isPublic() && !project.getWriter().equals(username)) {
+        if(project.getProjectState() != ProjectState.POSTED && !project.isPublic() && project.isWriter(username)) {
             throw new CannotReadBecausePrivateProjectException("해당 프로젝트는 비공개 이므로 열람할 수 없습니다");
         }
         return project;
@@ -164,6 +173,42 @@ public class ProjectService {
 
     public void removeMember(long projectId, String username) {
         this.getProject(projectId).removeMember(username);
+    }
+
+    public void startBatch(LocalDate now) {
+        List<Long> targetBatch = this.projectRepository.findTargetBatch(now);
+        if(targetBatch.size() == 0) {
+            return;
+        }
+        BatchProjectSagaData data = new BatchProjectSagaData(targetBatch);
+        this.batchProjectSagaDataSagaManager.create(data);
+    }
+
+    public boolean batchPending(List<Long> ids) {
+        try {
+            this.projectRepository.batchPendingUpdate(ids);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void batchUndo(List<Long> ids) {
+        this.projectRepository.batchUndoUpdate(ids);
+    }
+
+    public boolean batched(List<Long> ids) {
+        try {
+            this.projectRepository.batchUpdate(ids);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public BoardCategory getCategory(long id) {
+        return this.getProject(id).getBoard().getBoardCategory();
     }
 
     private Project getProject(long projectId) {

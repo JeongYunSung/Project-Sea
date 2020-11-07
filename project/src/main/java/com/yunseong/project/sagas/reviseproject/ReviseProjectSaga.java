@@ -1,5 +1,8 @@
 package com.yunseong.project.sagas.reviseproject;
 
+import com.yunseong.board.api.BoardDetail;
+import com.yunseong.board.api.BoardServiceChannels;
+import com.yunseong.board.api.command.ReviseBoardCommand;
 import com.yunseong.project.api.ProjectServiceChannels;
 import com.yunseong.project.api.TeamServiceChannels;
 import com.yunseong.project.api.command.IsLeaderTeamCommand;
@@ -26,7 +29,7 @@ public class ReviseProjectSaga implements SimpleSaga<ReviseProjectSagaData> {
                     .invokeParticipant(this::makeBeginReviseProjectCommand)
                     .withCompensation(this::makeUndoBeginReviseProjectCommand)
                 .step()
-                    .invokeParticipant(this::isLeaderTeam)
+                    .invokeParticipant(this::makeReviseBoardCommand)
                 .step()
                     .invokeParticipant(this::makeConfirmReviseProjectCommand)
                 .build();
@@ -35,12 +38,6 @@ public class ReviseProjectSaga implements SimpleSaga<ReviseProjectSagaData> {
     @Override
     public SagaDefinition<ReviseProjectSagaData> getSagaDefinition() {
         return this.sagaDefinition;
-    }
-
-    private CommandWithDestination isLeaderTeam(ReviseProjectSagaData data) {
-        return send(new IsLeaderTeamCommand(data.getTeamId(), data.getUsername()))
-                .to(TeamServiceChannels.teamServiceChannel)
-                .build();
     }
 
     private CommandWithDestination makeBeginReviseProjectCommand(ReviseProjectSagaData data) {
@@ -55,8 +52,15 @@ public class ReviseProjectSaga implements SimpleSaga<ReviseProjectSagaData> {
                 .build();
     }
 
-    public CommandWithDestination makeConfirmReviseProjectCommand(ReviseProjectSagaData data) {
-        return send(new ConfirmReviseProjectCommand(data.getProjectId(), data.getProjectRevision()))
+    private CommandWithDestination makeReviseBoardCommand(ReviseProjectSagaData data) {
+        return send(new ReviseBoardCommand(data.getProjectId(), new BoardDetail(data.getUsername(), data.getProjectRevision().getSubject(), data.getProjectRevision().getContent(),
+                data.getProjectRevision().getCategory(), null)))
+                .to(BoardServiceChannels.boardServiceChannel)
+                .build();
+    }
+
+    private CommandWithDestination makeConfirmReviseProjectCommand(ReviseProjectSagaData data) {
+        return send(new ConfirmReviseProjectCommand(data.getProjectId(), data.getProjectRevision().getSubject(), data.getProjectRevision().isOpen()))
                 .to(ProjectServiceChannels.projectServiceChannel)
                 .build();
     }

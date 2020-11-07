@@ -1,5 +1,6 @@
 package com.yunseong.board.service;
 
+import com.yunseong.board.api.BoardCategory;
 import com.yunseong.board.controller.*;
 import com.yunseong.board.domain.*;
 import lombok.AllArgsConstructor;
@@ -49,8 +50,8 @@ public class BoardService {
         return this.commentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("해당 댓글엔티티는 존재하지않습니다."));
     }
 
-    public Board createBoard(String writer, BoardCreateRequest request) {
-        return this.boardRepository.save(new Board(writer, request.getSubject(), request.getContent(), request.getCategory()));
+    public Board createBoard(String writer, BoardCreateRequest request, boolean isDifferent) {
+        return this.boardRepository.save(new Board(writer, request.getSubject(), request.getContent(), request.getCategory(), isDifferent));
     }
 
     public void delete(long id, String writer) {
@@ -74,14 +75,13 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public Page<BoardSearchResponse> findsBoard(BoardSearchCondition condition, Pageable pageable) {
-        return this.boardRepository.findPageByQuery(condition, pageable);
+        return this.boardRepository.findPageByQuery(condition, pageable).map(b -> new BoardSearchResponse(b.getId(), b.getSubject(), b.getWriter(), b.getBoardCategory(), b.getReadCount(), b.getRecommend().size(), b.getCreatedTime()));
     }
 
-    @Transactional(readOnly = true)
     public BoardDetailResponse findBoard(long id) {
         Board board = this.boardRepository.findFetchDtoById(id).orElseThrow(() -> new EntityNotFoundException("해당 게시판엔티티는 존재하지않습니다."));
         board.addReadCount();
-        return new BoardDetailResponse(board.getWriter(), board.getSubject(), board.getContent(), board.getBoardCategory(), board.getReadCount(), board.getRecommend().size());
+        return new BoardDetailResponse(board.getId(), board.getWriter(), board.getSubject(), board.getContent(), board.getBoardCategory(), board.getReadCount(), board.getRecommend().size(), board.getCreatedTime());
     }
 
     @Transactional(readOnly = true)

@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class TeamJoinedRequestEvent implements TeamEvent {
+public class TeamJoinedEvent implements TeamEvent {
 
     private Long projectId;
     private TeamMemberDetail teamMemberDetail;

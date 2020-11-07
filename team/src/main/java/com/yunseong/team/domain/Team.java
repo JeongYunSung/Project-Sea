@@ -45,15 +45,12 @@ public class Team {
     @OneToMany(cascade = CascadeType.ALL)
     private final List<TeamMember> teamMembers = new ArrayList<>();
 
-    private boolean isDelete;
-
     public Team(long projectId, String username, int minSize, int maxSize) {
         this.projectId = projectId;
         this.minSize = minSize;
         this.maxSize = maxSize;
         this.teamState = TeamState.RECRUIT_PENDING;
         this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.LEADER)));
-        this.isDelete = false;
     }
 
     public List<TeamEvent> join(String username) {
@@ -66,7 +63,8 @@ public class Team {
                 this.teamState = TeamState.VOTE_PENDING;
                 return Collections.singletonList(new TeamAuthorizeVoteRequestedEvent(this.projectId, this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
             }
-            return Collections.singletonList(new TeamJoinedRequestEvent(this.projectId, username, this.teamMembers.stream().filter(m -> !m.getTeamMemberDetail().getUsername().equals(username)).map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
+            return Collections.singletonList(new TeamJoinedEvent(this.projectId, this.teamMembers.get(0).getTeamMemberDetail()
+                    , this.teamMembers.subList(1, this.teamMembers.size()).stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
         }
         throw new UnsupportedStateTransitionException(this.teamState);
     }
@@ -137,7 +135,8 @@ public class Team {
                     this.getTeamMembers().remove(teamMembers.get(i));
                 }
             }
-            return Collections.singletonList(new TeamQuitEvent(this.projectId, username, this.teamMembers.stream().filter(m -> !m.getTeamMemberDetail().getUsername().equals(username)).map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
+            return Collections.singletonList(new TeamQuitEvent(this.projectId, this.teamMembers.get(0).getTeamMemberDetail()
+                    , this.teamMembers.subList(1, this.teamMembers.size()).stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
         }
         throw new UnsupportedStateTransitionException(this.teamState);
     }

@@ -1,5 +1,7 @@
 package com.yunseong.project.sagas.cancelproject;
 
+import com.yunseong.board.api.BoardServiceChannels;
+import com.yunseong.board.api.command.DeleteBoardCommand;
 import com.yunseong.project.api.ProjectServiceChannels;
 import com.yunseong.project.api.TeamServiceChannels;
 import com.yunseong.project.api.command.CancelTeamCommand;
@@ -26,9 +28,9 @@ public class CancelProjectSaga implements SimpleSaga<CancelProjectSagaData> {
                     .invokeParticipant(this::cancelProject)
                     .withCompensation(this::undoCancelProject)
                 .step()
-                    .invokeParticipant(this::isLeaderTeam)
-                .step()
                     .invokeParticipant(this::cancelTeam)
+                .step()
+                    .invokeParticipant(this::deleteBoard)
                 .step()
                     .invokeParticipant(this::confirmCancelProject)
                 .build();
@@ -39,9 +41,15 @@ public class CancelProjectSaga implements SimpleSaga<CancelProjectSagaData> {
         return this.sagaDefinition;
     }
 
-    private CommandWithDestination isLeaderTeam(CancelProjectSagaData data) {
-        return send(new IsLeaderTeamCommand(data.getTeamId(), data.getUsername()))
-                .to(TeamServiceChannels.teamServiceChannel)
+//    private CommandWithDestination isLeaderTeam(CancelProjectSagaData data) {
+//        return send(new IsLeaderTeamCommand(data.getTeamId(), data.getUsername()))
+//                .to(TeamServiceChannels.teamServiceChannel)
+//                .build();
+//    }
+
+    private CommandWithDestination deleteBoard(CancelProjectSagaData data) {
+        return send(new DeleteBoardCommand(data.getProjectId(), data.getUsername()))
+                .to(BoardServiceChannels.boardServiceChannel)
                 .build();
     }
 

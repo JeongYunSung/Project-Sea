@@ -5,7 +5,6 @@ import ProjectServiceProxy from '../service/ProjectServiceProxy';
 import TeamServiceProxy from '../service/TeamServiceProxy';
 import WeClassServiceProxy from '../service/WeClassServiceProxy';
 import Options from '../service/Options';
-import {Token} from "graphql";
 
 const config = require('../config/my-config.json');
 

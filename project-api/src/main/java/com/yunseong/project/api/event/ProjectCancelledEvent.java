@@ -11,7 +11,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class ProjectCanceledEvent implements ProjectEvent {
+public class ProjectCancelledEvent implements ProjectEvent {
 
     private long id;
     private Set<String> usernames;

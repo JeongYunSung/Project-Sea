@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 public class RegisterTeamCommand extends ProjectCommand {
 
     private long teamId;
+    private String username;
 
-    public RegisterTeamCommand(long projectId, long teamId) {
+    public RegisterTeamCommand(long projectId, String username, long teamId) {
         super(projectId);
+        this.username = username;
         this.teamId = teamId;
     }
 }

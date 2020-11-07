@@ -4,6 +4,7 @@ apply plugin: "com.ewerk.gradle.plugins.querydsl"
 dependencies {
     implementation project(':common')
     implementation project(':team-api')
+    implementation project(':board-api')
     implementation project(':project-api')
     implementation project(':weclass-api')
     implementation 'com.querydsl:querydsl-jpa'

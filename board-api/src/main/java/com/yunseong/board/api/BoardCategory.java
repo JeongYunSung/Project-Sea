@@ -1,4 +1,4 @@
-package com.yunseong.board.domain;
+package com.yunseong.board.api;
 
 import com.yunseong.member.api.controller.Permission;
 import lombok.Getter;

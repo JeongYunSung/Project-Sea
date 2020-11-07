@@ -1,6 +1,5 @@
 package com.yunseong.board.domain;
 
-import com.yunseong.board.controller.BoardDetailResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

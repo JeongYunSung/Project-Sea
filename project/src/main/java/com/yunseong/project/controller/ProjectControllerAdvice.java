@@ -2,6 +2,7 @@ package com.yunseong.project.controller;
 
 import com.yunseong.common.AlreadyExistedElementException;
 import com.yunseong.common.UnsupportedStateTransitionException;
+import com.yunseong.project.domain.EmptyCollectionException;
 import com.yunseong.project.service.CannotReadBecausePrivateProjectException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,13 @@ import javax.persistence.EntityNotFoundException;
 
 @RestControllerAdvice
 public class ProjectControllerAdvice {
+
+    @ExceptionHandler(EmptyCollectionException.class)
+    public ResponseEntity<?> handleEmptyCollectionException(EmptyCollectionException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.rejectValue("empty collection", exception.getMessage());
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
+    }
 
     @ExceptionHandler(AlreadyExistedElementException.class)
     public ResponseEntity<?> handleAlreadyExistedElementException(AlreadyExistedElementException exception) {

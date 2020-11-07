@@ -10,7 +10,6 @@ import lombok.Getter;
 public class ProjectInfo {
 
     private String projectSubject;
-    private ProjectTheme projectTheme;
     private String projectContent;
     private ProjectState projectState;
 }

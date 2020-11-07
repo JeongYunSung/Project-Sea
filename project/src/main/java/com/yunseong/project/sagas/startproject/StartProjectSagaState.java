@@ -20,9 +20,9 @@ public class StartProjectSagaState {
 
     @NonNull
     private Long projectId;
-    private Long weClassId;
     @NonNull
     private Long teamId;
+    private Long weClassId;
 
     @Override
     public boolean equals(Object o) {

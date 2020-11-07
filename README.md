@@ -24,7 +24,7 @@
 
 사용한 기술
 
-- Spring Boot
+- Spring Boot & Scheduler
 - JPA & QueryDSL & MariaDB
 - Eventuate Tram & Kafka
 - GraphQL & GraphQL-Yoga(express)
@@ -32,7 +32,6 @@
 
 도입예정 기술
 
-- Redis & CQRS
-- Batch Server
-- Docker & Kubernets
+- Redis & CQRS (Project부분)
+- Docker & Kubernetes
 - 헬스체크 & 중앙로깅, 콘피그 서버

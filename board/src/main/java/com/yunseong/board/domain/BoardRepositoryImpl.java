@@ -4,9 +4,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.yunseong.board.api.BoardCategory;
 import com.yunseong.board.controller.BoardSearchCondition;
 import com.yunseong.board.controller.BoardSearchResponse;
-import com.yunseong.board.controller.QBoardSearchResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.support.PageableExecutionUtils;
@@ -28,13 +28,14 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
     }
 
     @Override
-    public Page<BoardSearchResponse> findPageByQuery(BoardSearchCondition condition, Pageable pageable) {
+    public Page<Board> findPageByQuery(BoardSearchCondition condition, Pageable pageable) {
         StringPath recommenders = Expressions.stringPath("recommenders");
-        List<BoardSearchResponse> content = this.jpaQueryFactory
-                .select(new QBoardSearchResponse(board.id, board.subject, board.writer, board.boardCategory, board.createdTime, recommenders.count())).distinct()
+        List<Board> content = this.jpaQueryFactory
+//                .select(new QBoardSearchResponse(board.id, board.subject, board.writer, board.boardCategory, board.createdTime, recommenders.count())).distinct()
+                .select(board).distinct()
                 .from(board)
-                .where(recommendCountLoe(condition, recommenders), eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())
-                .leftJoin(board.recommend, recommenders)
+                .where(board.isDifferent.isFalse(), recommendCountLoe(condition, recommenders), eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())
+                .leftJoin(board.recommend, recommenders).fetchJoin()
                 .orderBy(board.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

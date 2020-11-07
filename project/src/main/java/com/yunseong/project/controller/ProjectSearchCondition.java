@@ -1,7 +1,7 @@
 package com.yunseong.project.controller;
 
+import com.yunseong.board.api.BoardCategory;
 import com.yunseong.project.api.event.ProjectState;
-import com.yunseong.project.api.event.ProjectTheme;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +14,6 @@ public class ProjectSearchCondition {
 
     private String subject;
     private ProjectState projectState;
-    private ProjectTheme projectTheme;
+    private BoardCategory boardCategory;
     private String username;
 }

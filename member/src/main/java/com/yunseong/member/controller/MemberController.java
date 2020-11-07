@@ -29,7 +29,7 @@ public class MemberController {
     private final AES256Util aes256Util;
 
     @PostMapping(value = "/signup")
-    public ResponseEntity<MemberResponse> signUp(@RequestBody SignUpRequest request) {
+    public ResponseEntity<MemberResponse> signUp(@RequestBody SignUpRequest request) throws GeneralSecurityException {
         ResultWithEvents<Member> result = this.memberService.signUp(request.getUsername(), request.getPassword(), request.getNickname());
         return new ResponseEntity<>(new MemberResponse(result.result.getUsername()), HttpStatus.CREATED);
     }

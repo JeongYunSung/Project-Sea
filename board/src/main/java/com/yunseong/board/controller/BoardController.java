@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping(value = "/boards")
@@ -29,7 +30,7 @@ public class BoardController {
     private final FileService fileService;
 
     @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PostAuthorize("(isAnonymous() and (returnObject.body.boardCategory.readPermission.name() == 'ANONYMOUS')) or (#oauth2.hasScope('board_read') and hasRole('ROLE_' + returnObject.body.boardCategory.readPermission.name()))")
+    @PostAuthorize("(isAnonymous() and (returnObject.body.category.readPermission.name() == 'ANONYMOUS')) or (#oauth2.hasScope('board_read') and hasRole('ROLE_' + returnObject.body.category.readPermission.name()))")
     public ResponseEntity<BoardDetailResponse> findBoard(@PathVariable long id) {
         return ResponseEntity.ok(this.boardService.findBoard(id));
     }
@@ -52,10 +53,23 @@ public class BoardController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("#oauth2.hasScope('board_write') and hasRole('ROLE_' + #request.category.writePermission.name())")
-    public ResponseEntity<Long> createBoard(@RequestBody BoardCreateRequest request, @RequestPart MultipartFile file, Principal principal) {
-        Board board = this.boardService.createBoard(principal.getName(), request);
-        this.fileService.save(board.getId(), file);
+    public ResponseEntity<Long> createBoard(@ModelAttribute BoardCreateRequest request, @RequestPart(required = false, name = "file") MultipartFile[] files, Principal principal) {
+        Board board = this.boardService.createBoard(principal.getName(), request, false);
+        if(files != null && files.length > 0) this.fileService.save(board.getId(), files);
         return new ResponseEntity<>(board.getId(), HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
+    @PostMapping(value = "/{id}/comments", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> createComment(@PathVariable long id, @RequestBody CommentCreateRequest request, Principal principal) {
+        Comment comment = this.boardService.createComment(id, principal.getName(), request);
+        return new ResponseEntity<>(comment.getId(), HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
+    @PutMapping(value = "/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> reviseComment(@PathVariable long id, @RequestBody CommentReviseRequest reviseRequest, Principal principal) {
+        return ResponseEntity.ok(this.boardService.reviseComment(id, principal.getName(), reviseRequest.getContent()).getId());
     }
 
     @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
@@ -74,19 +88,6 @@ public class BoardController {
     public ResponseEntity<?> deleteBoard(@PathVariable long id, Principal principal) {
         this.boardService.delete(id, principal.getName());
         return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
-    @PostMapping(value = "/{id}/comments", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> createComment(@PathVariable long id, @RequestBody CommentCreateRequest request, Principal principal) {
-        Comment comment = this.boardService.createComment(id, principal.getName(), request);
-        return new ResponseEntity<>(comment.getId(), HttpStatus.CREATED);
-    }
-
-    @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
-    @PutMapping(value = "/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> reviseComment(@PathVariable long id, @RequestBody CommentReviseRequest reviseRequest, Principal principal) {
-        return ResponseEntity.ok(this.boardService.reviseComment(id, principal.getName(), reviseRequest.getContent()).getId());
     }
 
     @DeleteMapping(value = "/comments/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)

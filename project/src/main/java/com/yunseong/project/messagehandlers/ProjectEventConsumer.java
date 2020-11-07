@@ -1,6 +1,6 @@
 package com.yunseong.project.messagehandlers;
 
-import com.yunseong.project.api.event.TeamJoinedRequestEvent;
+import com.yunseong.project.api.event.TeamJoinedEvent;
 import com.yunseong.project.api.event.TeamQuitEvent;
 import com.yunseong.project.api.event.TeamVotedEvent;
 import com.yunseong.project.service.ProjectService;
@@ -18,7 +18,7 @@ public class ProjectEventConsumer {
         return DomainEventHandlersBuilder
                 .forAggregateType("com.yunseong.team.domain.Team")
                 .onEvent(TeamVotedEvent.class, this::startProjectSaga)
-                .onEvent(TeamJoinedRequestEvent.class, this::joinMember)
+                .onEvent(TeamJoinedEvent.class, this::joinMember)
                 .onEvent(TeamQuitEvent.class, this::quitMember)
                 .build();
     }
@@ -27,11 +27,11 @@ public class ProjectEventConsumer {
         this.projectService.startProject(event.getEvent().getProjectId(), event.getEvent().getTeamId());
     }
 
-    private void joinMember(DomainEventEnvelope<TeamJoinedRequestEvent> event) {
-        this.projectService.addMember(event.getEvent().getProjectId(), event.getEvent().getUsername());
+    private void joinMember(DomainEventEnvelope<TeamJoinedEvent> event) {
+        this.projectService.addMember(event.getEvent().getProjectId(), event.getEvent().getTeamMemberDetail().getUsername());
     }
 
     private void quitMember(DomainEventEnvelope<TeamQuitEvent> event) {
-        this.projectService.removeMember(event.getEvent().getProjectId(), event.getEvent().getUsername());
+        this.projectService.removeMember(event.getEvent().getProjectId(), event.getEvent().getTeamMemberDetail().getUsername());
     }
 }
