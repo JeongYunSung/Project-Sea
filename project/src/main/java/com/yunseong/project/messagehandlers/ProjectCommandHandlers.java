@@ -1,7 +1,6 @@
 package com.yunseong.project.messagehandlers;
 
 import com.yunseong.project.api.ProjectServiceChannels;
-import com.yunseong.project.domain.ProjectSimpleRevision;
 import com.yunseong.project.sagaparticipants.*;
 import com.yunseong.project.service.ProjectService;
 import io.eventuate.tram.commands.consumer.CommandHandlers;
@@ -29,7 +28,6 @@ public class ProjectCommandHandlers {
                 .onMessage(UndoBeginReviseProjectCommand.class, this::undoReviseProject)
                 .onMessage(ConfirmReviseProjectCommand.class, this::confirmReviseProject)
 
-                .onMessage(CloseProjectCommand.class, this::closeProject)
                 .onMessage(RejectProjectCommand.class, this::rejectProject)
                 .onMessage(RegisterWeClassCommand.class, this::registerWeClass)
                 .onMessage(StartProjectCommand.class, this::startProject)
@@ -77,7 +75,7 @@ public class ProjectCommandHandlers {
     }
 
     public Message confirmReviseProject(CommandMessage<ConfirmReviseProjectCommand> cm) {
-        if(this.projectService.revisedProject(cm.getCommand().getProjectId(), new ProjectSimpleRevision(cm.getCommand().getSubject(), cm.getCommand().isPublic())))
+        if(this.projectService.revisedProject(cm.getCommand().getProjectId(), cm.getCommand().getProjectRevision()))
             return withSuccess();
         return withFailure();
     }
@@ -110,14 +108,6 @@ public class ProjectCommandHandlers {
         if(this.projectService.cancelledProject(cm.getCommand().getProjectId()))
             return withSuccess();
         return withFailure();
-    }
-
-    public Message closeProject(CommandMessage<CloseProjectCommand> cm) {
-        long projectId = cm.getCommand().getProjectId();
-        if(this.projectService.closeProject(projectId))
-            return withSuccess();
-        else
-            return withFailure();
     }
 
     public Message startProject(CommandMessage<StartProjectCommand> cm) {

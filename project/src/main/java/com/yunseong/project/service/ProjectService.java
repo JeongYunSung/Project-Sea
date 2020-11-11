@@ -4,17 +4,17 @@ import com.yunseong.board.api.BoardCategory;
 import com.yunseong.board.api.BoardDetail;
 import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import com.yunseong.common.UnsupportedStateTransitionException;
-import com.yunseong.project.api.controller.CreateProjectRequest;
+import com.yunseong.project.controller.CreateProjectRequest;
 import com.yunseong.project.api.event.ProjectEvent;
 import com.yunseong.project.api.event.ProjectState;
-import com.yunseong.project.api.event.TeamPermission;
+import com.yunseong.project.controller.HotProjectSearchCondition;
 import com.yunseong.project.controller.ProjectSearchCondition;
 import com.yunseong.project.domain.*;
 import com.yunseong.project.sagas.batchproject.BatchProjectSagaData;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
 import com.yunseong.project.sagas.createproject.CreateProjectSagaState;
 import com.yunseong.project.sagas.reviseproject.ReviseProjectSagaData;
-import com.yunseong.project.sagas.startproject.StartProjectSagaState;
+import com.yunseong.project.sagas.startproject.StartProjectSagaData;
 import io.eventuate.tram.events.aggregates.ResultWithDomainEvents;
 import io.eventuate.tram.sagas.orchestration.SagaManager;
 import lombok.AllArgsConstructor;
@@ -25,9 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -37,7 +38,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectDomainEventPublisher projectDomainEventPublisher;
     private final SagaManager<CreateProjectSagaState> createProjectSagaSagaManager;
-    private final SagaManager<StartProjectSagaState> createWeClassSagaSagaManager;
+    private final SagaManager<StartProjectSagaData> startProjectSagaStateSagaManager;
     private final SagaManager<CancelProjectSagaData> cancelProjectSagaDataSagaManager;
     private final SagaManager<ReviseProjectSagaData> reviseProjectSagaDataSagaManager;
     private final SagaManager<BatchProjectSagaData> batchProjectSagaDataSagaManager;
@@ -53,18 +54,20 @@ public class ProjectService {
         return rwe;
     }
 
-    public Project cancel(long projectId, String username) throws EntityNotFoundException {
+    public Project cancel(long projectId, String username) {
         Project project = this.getProject(projectId);
         if(project.isWriter(username)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
+        if(project.getProjectState() != ProjectState.POSTED) throw new NotReviseForUnsupportedException("프로젝트가 취소할 수 없는 상태입니다");
         CancelProjectSagaData data = new CancelProjectSagaData(projectId, project.getTeamId(), username);
         this.cancelProjectSagaDataSagaManager.create(data);
         return project;
     }
 
-    public Project revise(long projectId, ProjectRevision projectRevision, String username) throws EntityNotFoundException {
+    public Project revise(long projectId, ProjectRevision projectRevision, String username, MultipartFile[] files) {
         Project project = this.getProject(projectId);
         if(project.isWriter(username)) throw new CannotReviseBoardIfWriterNotWereException("작성자가 아니면 수정할 수 없습니다");
-        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, project.getBoardId(), username, projectRevision);
+        if(project.getProjectState() != ProjectState.POSTED) throw new NotReviseForUnsupportedException("프로젝트가 수정할 수 없는 상태입니다");
+        ReviseProjectSagaData data = new ReviseProjectSagaData(projectId, project.getBoardId(), username, projectRevision, files);
         this.reviseProjectSagaDataSagaManager.create(data);
         return project;
     }
@@ -74,9 +77,19 @@ public class ProjectService {
         return this.projectRepository.findBySearch(projectSearchCondition, pageable);
     }
 
+    @Transactional(readOnly = true)
+    public Page<Project> findMyProjects(String username, Pageable pageable) {
+        return this.projectRepository.findMyProjects(username, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Project> findHotProjects(HotProjectSearchCondition projectSearchCondition) {
+        return this.projectRepository.findHotProjects(projectSearchCondition);
+    }
+
     public void startProject(long projectId, long teamId) {
-        StartProjectSagaState data = new StartProjectSagaState(projectId, teamId);
-        this.createWeClassSagaSagaManager.create(data, Project.class, projectId);
+        StartProjectSagaData data = new StartProjectSagaData(projectId, teamId);
+        this.startProjectSagaStateSagaManager.create(data);
     }
 
 
@@ -124,10 +137,10 @@ public class ProjectService {
         updateProject(projectId, Project::undoCancelOrPostedOrRevision);
     }
 
-    public boolean revisedProject(long projectId, ProjectSimpleRevision projectSimpleRevision) {
+    public boolean revisedProject(long projectId, ProjectRevision projectRevision) {
         try {
             Project project = getProject(projectId);
-            this.projectDomainEventPublisher.publish(project, project.revised(projectSimpleRevision));
+            this.projectDomainEventPublisher.publish(project, project.revised(projectRevision));
             return true;
         }catch (UnsupportedStateTransitionException e) {
             return false;
@@ -161,7 +174,7 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public Project findProject(long projectId, String username) {
         Project project = this.getProject(projectId);
-        if(project.getProjectState() != ProjectState.POSTED && !project.isPublic() && project.isWriter(username)) {
+        if(project.getProjectState() != ProjectState.POSTED && !project.isPublic() && project.getMembers().contains(username)) {
             throw new CannotReadBecausePrivateProjectException("해당 프로젝트는 비공개 이므로 열람할 수 없습니다");
         }
         return project;
@@ -175,12 +188,12 @@ public class ProjectService {
         this.getProject(projectId).removeMember(username);
     }
 
-    public void startBatch(LocalDate now) {
-        List<Long> targetBatch = this.projectRepository.findTargetBatch(now);
+    public void startBatch(Date now) {
+        List<Project> targetBatch = this.projectRepository.findTargetBatch(now);
         if(targetBatch.size() == 0) {
             return;
         }
-        BatchProjectSagaData data = new BatchProjectSagaData(targetBatch);
+        BatchProjectSagaData data = new BatchProjectSagaData(targetBatch.stream().map(Project::getId).collect(Collectors.toList()), targetBatch.stream().map(Project::getBoardId).collect(Collectors.toList()));
         this.batchProjectSagaDataSagaManager.create(data);
     }
 
@@ -204,6 +217,11 @@ public class ProjectService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void addRecommend(long boardId, Date now, long value) {
+        Project project = this.projectRepository.findByBoardId(boardId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지않습니다"));
+        project.getBoard().addRecommend(now, value);
     }
 
     @Transactional(readOnly = true)

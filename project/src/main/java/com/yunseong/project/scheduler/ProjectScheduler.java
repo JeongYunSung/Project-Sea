@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Component
 @AllArgsConstructor
@@ -15,6 +18,11 @@ public class ProjectScheduler {
 
     @Scheduled(cron = "0 0 0 * * *")
     public void task() {
-        this.projectService.startBatch(LocalDate.now());
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            this.projectService.startBatch(simpleDateFormat.parse(simpleDateFormat.format(new Date())));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -17,8 +17,8 @@ class TokenManager {
         return this._tokens.has(ip);
     }
 
-    removeToken(ip: string): void {
-        this._tokens.delete(ip);
+    removeToken(ip: string): boolean {
+        return this._tokens.delete(ip);
     }
 
     getNullToken() {

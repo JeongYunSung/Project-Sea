@@ -1,6 +1,5 @@
 package com.yunseong.project.domain;
 
-import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
@@ -8,16 +7,21 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yunseong.board.api.BoardCategory;
 import com.yunseong.project.api.event.ProjectState;
+import com.yunseong.project.controller.HotProjectSearchCondition;
 import com.yunseong.project.controller.ProjectSearchCondition;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 
+import java.util.List;
+
 import static com.yunseong.project.domain.QProject.project;
+import static com.yunseong.project.domain.QProjectBoard.projectBoard;
+import static com.yunseong.project.domain.QProjectRecommendStatistics.projectRecommendStatistics;
 
 @Repository
 public class ProjectRepositoryImpl implements ProjectQueryRepository {
@@ -34,18 +38,39 @@ public class ProjectRepositoryImpl implements ProjectQueryRepository {
         JPAQuery<Project> from = this.jpaQueryFactory
                 .select(project)
                 .from(project)
-                .innerJoin(project.members, usernames);
+                .innerJoin(project.members, usernames).fetchJoin()
+                .innerJoin(project.board, projectBoard).fetchJoin()
+                .leftJoin(projectBoard.recommendStatistics, projectRecommendStatistics).fetchJoin();
+        JPAQuery<Long> count = this.jpaQueryFactory.select(project.count())
+                .from(project)
+                .innerJoin(project.members, usernames)
+                .innerJoin(project.board, projectBoard);
         if(projectSearchCondition.getProjectState() != ProjectState.POSTED) {
-            from.where(project.isPublic.isTrue(), eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getBoardCategory()));
+            from.where(project.isPublic.isTrue(), inUsername(projectSearchCondition, usernames), eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getBoardCategory()));
+            count.where(project.isPublic.isTrue(), inUsername(projectSearchCondition, usernames), eqProjectState(projectSearchCondition), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getBoardCategory()));
         }else {
             from.where(eqProjectState(projectSearchCondition), inUsername(projectSearchCondition, usernames), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getBoardCategory()));
+            count.where(eqProjectState(projectSearchCondition), inUsername(projectSearchCondition, usernames), containsSubject(projectSearchCondition.getSubject()), equalsTheme(projectSearchCondition.getBoardCategory()));
         }
-        QueryResults<Project> result = from
+        List<Project> content = from
                 .orderBy(project.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetchResults();
-        return new PageImpl<>(result.getResults(), pageable, result.getTotal());
+                .fetch();
+        return PageableExecutionUtils.getPage(content, pageable, count::fetchCount);
+    }
+
+    @Override
+    public List<Project> findHotProjects(HotProjectSearchCondition condition) {
+        return this.jpaQueryFactory
+                .select(project).distinct()
+                .from(project)
+                .where(this.equalsTheme(condition.getCategory()), projectRecommendStatistics.recommendDate.between(condition.getMinDate(), condition.getMaxDate()))
+                .innerJoin(project.board, projectBoard).fetchJoin()
+                .innerJoin(projectBoard.recommendStatistics, projectRecommendStatistics).fetchJoin()
+                .groupBy(project.id)
+                .orderBy(projectRecommendStatistics.value.sum().desc())
+                .limit(condition.getSize()).fetch();
     }
 
     private BooleanExpression inUsername(ProjectSearchCondition projectSearchCondition, StringPath usernames) {

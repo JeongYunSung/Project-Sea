@@ -13,6 +13,6 @@ import java.util.List;
 public class TeamQuitEvent implements TeamEvent {
 
     private long projectId;
-    private TeamMemberDetail teamMemberDetail;
+    private String username;
     private List<TeamMemberDetail> teamMembers;
 }

@@ -42,7 +42,7 @@ public class Team {
     @LastModifiedDate
     private LocalDateTime updatedTime;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "team", cascade = CascadeType.ALL)
     private final List<TeamMember> teamMembers = new ArrayList<>();
 
     public Team(long projectId, String username, int minSize, int maxSize) {
@@ -50,7 +50,7 @@ public class Team {
         this.minSize = minSize;
         this.maxSize = maxSize;
         this.teamState = TeamState.RECRUIT_PENDING;
-        this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.LEADER)));
+        this.teamMembers.add(new TeamMember(this, new TeamMemberDetail(username, TeamPermission.LEADER)));
     }
 
     public List<TeamEvent> join(String username) {
@@ -58,13 +58,14 @@ public class Team {
             if (this.teamMembers.stream().filter(tm -> tm.getTeamMemberDetail().getUsername().equals(username)).count() >= 1) {
                 throw new TeamMemberReduplicationException(username + "유저는 이미 팀내에 존재합니다");
             }
-            this.teamMembers.add(new TeamMember(new TeamMemberDetail(username, TeamPermission.USER)));
+            this.teamMembers.add(new TeamMember(this, new TeamMemberDetail(username, TeamPermission.USER)));
             if (this.getSize() == this.maxSize) {
                 this.teamState = TeamState.VOTE_PENDING;
-                return Collections.singletonList(new TeamAuthorizeVoteRequestedEvent(this.projectId, this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
+                return List.of(new TeamJoinedEvent(this.projectId, username
+                        , this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())), new TeamAuthorizeVoteRequestedEvent(this.projectId, this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
             }
-            return Collections.singletonList(new TeamJoinedEvent(this.projectId, this.teamMembers.get(0).getTeamMemberDetail()
-                    , this.teamMembers.subList(1, this.teamMembers.size()).stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
+            return Collections.singletonList(new TeamJoinedEvent(this.projectId, username
+                    , this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
         }
         throw new UnsupportedStateTransitionException(this.teamState);
     }
@@ -135,8 +136,8 @@ public class Team {
                     this.getTeamMembers().remove(teamMembers.get(i));
                 }
             }
-            return Collections.singletonList(new TeamQuitEvent(this.projectId, this.teamMembers.get(0).getTeamMemberDetail()
-                    , this.teamMembers.subList(1, this.teamMembers.size()).stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
+            return Collections.singletonList(new TeamQuitEvent(this.projectId, username
+                    , this.teamMembers.stream().map(TeamMember::getTeamMemberDetail).collect(Collectors.toList())));
         }
         throw new UnsupportedStateTransitionException(this.teamState);
     }

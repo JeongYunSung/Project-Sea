@@ -21,6 +21,11 @@ public class TeamMember {
     private Long id;
 
     @NonNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_name")
+    private Team team;
+
+    @NonNull
     @Embedded
     private TeamMemberDetail teamMemberDetail;
 

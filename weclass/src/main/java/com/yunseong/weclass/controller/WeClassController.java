@@ -22,12 +22,6 @@ public class WeClassController {
 
     private final WeClassService weClassService;
 
-    @PostMapping("/{id}/report")
-    public ResponseEntity<Long> createReport(@PathVariable long id, CreateReportRequest reportRequest, Principal principal) {
-        WeClass report = this.weClassService.createReport(id, principal.getName(), reportRequest.getSubject(), reportRequest.getContent());
-        return new ResponseEntity<>(report.getId(), HttpStatus.CREATED);
-    }
-
     @GetMapping("/{id}/notice")
     public ResponseEntity<WeClassNoticeResponse> findNotice(@PathVariable long id) {
         WeClass weClass = this.weClassService.findById(id);
@@ -45,6 +39,12 @@ public class WeClassController {
     public ResponseEntity<WeClassReportDetailResponse> findReport(@PathVariable long id) {
         Report report = this.weClassService.findReport(id);
         return ResponseEntity.ok(new WeClassReportDetailResponse(report.getWriter(), report.getSubject(), report.getContent(), report.getCreatedTime()));
+    }
+
+    @PostMapping("/{id}/report")
+    public ResponseEntity<Long> createReport(@PathVariable long id, CreateReportRequest reportRequest, Principal principal) {
+        WeClass report = this.weClassService.createReport(id, principal.getName(), reportRequest.getSubject(), reportRequest.getContent());
+        return new ResponseEntity<>(report.getId(), HttpStatus.CREATED);
     }
 
     @PutMapping("/reports/{id}")

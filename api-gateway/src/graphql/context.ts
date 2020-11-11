@@ -11,7 +11,7 @@ const config = require('../config/my-config.json');
 const context = {
     memberServiceProxy: new MemberServiceProxy(new Options(config.member_uri)),
     boardServiceProxy: new BoardServiceProxy(new Options(config.board_uri)),
-    notificationServerProxy: new NotificationServiceProxy(new Options(config.notification_uri)),
+    notificationServiceProxy: new NotificationServiceProxy(new Options(config.notification_uri)),
     projectServiceProxy: new ProjectServiceProxy(new Options(config.project_uri)),
     teamServiceProxy: new TeamServiceProxy(new Options(config.team_uri)),
     weClassServiceProxy: new WeClassServiceProxy(new Options(config.weclass_uri)),

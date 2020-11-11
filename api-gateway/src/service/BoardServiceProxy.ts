@@ -3,9 +3,6 @@ import * as fs from 'fs';
 import * as FormData from 'form-data';
 import Options from '../service/Options';
 import withQuery from "with-query";
-import DataLoader from 'data-loader';
-
-const config = require('../config/my-config.json');
 
 class BoardServiceProxy {
 
@@ -32,19 +29,56 @@ class BoardServiceProxy {
         }
     }
 
-    async searchBoard(token: string, writer: string, subject: string, category: string, recommendCount: number, page: number, size: number) {
-        const response = await fetch(withQuery(`${this.boardService}`, {writer, subject, category, recommendCount, page, size}), {
+    async findMyBoards(token: string, page: number, size: number) {
+        const response = await fetch(withQuery(`${this.boardService}/me`, {page, size}), {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
         });
         let result = await response.json();
-        if(result._embedded != undefined) {
-            result = {boards: result._embedded.boardSearchResponseList, page: result.page};
+        if(response.status == 200) {
+            if(result._embedded != undefined) {
+                result = {boards: result._embedded.boardSimpleResponseList, page: result.page};
+            }else {
+                result = {page: result.page};
+            }
+            return result;
+        }else if(response.status < 500 && response.status >= 400) {
+            return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
         }else {
-            result = {page: result.page};
+            return new Error('Unexpected Http Status Code');
         }
+    }
+
+    async searchBoard(writer: string, subject: string, category: string, page: number, size: number) {
+        const response = await fetch(withQuery(`${this.boardService}`, {writer, subject, category, page, size}), {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        let result = await response.json();
+        if(response.ok) {
+            if(result._embedded != undefined) {
+                result = {boards: result._embedded.boardSearchResponseList, page: result.page};
+            }else {
+                result = {page: result.page};
+            }
+            return result;
+        }else if(response.status < 500 && response.status >= 400) {
+            return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
+        }else {
+            return new Error('Unexpected Http Status Code');
+        }
+    }
+
+    async bestBoard(minDate: string, maxDate: string, size: number, category: string) {
+        const response = await fetch(withQuery(`${this.boardService}/best`, {minDate, maxDate, size, category}), {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        let result = await response.json();
         if(response.ok) {
             return result;
         }else if(response.status < 500 && response.status >= 400) {
@@ -62,12 +96,12 @@ class BoardServiceProxy {
             }
         });
         let result = await response.json();
-        if(result._embedded != undefined) {
-            result = {comments: result._embedded.commentResponseList, page: result.page};
-        }else {
-            result = {page: result.page};
-        }
         if(response.ok) {
+            if(result._embedded != undefined) {
+                result = {comments: result._embedded.commentResponseList, page: result.page};
+            }else {
+                result = {page: result.page};
+            }
             return result;
         }else if(response.status < 500 && response.status >= 400) {
             return new Error((Array.isArray(result)) ? JSON.stringify(result[0].defaultMessage) : JSON.stringify(result));
@@ -122,14 +156,20 @@ class BoardServiceProxy {
         }
     }
 
-    async putBoard(token: string, id: number, subject: string, content: string): Promise<any> {
+    async putBoard(token: string, id: number, subject: string, content: string, files: any): Promise<any> {
+        const formData = new FormData();
+        formData.append('subject', subject);
+        formData.append('content', content);
+        if(Array.isArray(files)) {
+            Array.from(files).forEach(k => formData.append('file', fs.createReadStream(k)));
+        }
+
         const response = await fetch(`${this.boardService}/${id}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({subject, content}),
+            body: formData,
         });
         const result = await response.json();
         if(response.ok) {

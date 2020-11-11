@@ -42,31 +42,37 @@ public class TeamController {
 //    }
 
     @PutMapping(value = "/join/accept")
-    public ResponseEntity<?> authorizeAcceptTeam(@RequestBody TeamVoteRequest teamVoteRequest) {
+    public ResponseEntity<?> authorizeAcceptTeam(@RequestBody TeamVoteRequest teamVoteRequest, Principal principal) {
         String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
         if(decrypt.length != 2) throw new NotMatchedCryptException("잘못된 토큰 값입니다.");
+        if(!decrypt[1].equals(principal.getName())) {
+            throw new NotMatchedUsernameException("잘못된 토큰 값입니다.");
+        }
         this.teamService.accept(Long.parseLong(decrypt[0]), decrypt[1]);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/join/reject")
-    public ResponseEntity<?> authorizeRejectTeam(@RequestBody TeamVoteRequest teamVoteRequest) {
+    public ResponseEntity<?> authorizeRejectTeam(@RequestBody TeamVoteRequest teamVoteRequest, Principal principal) {
         String[] decrypt = aes256Util.decrypt(teamVoteRequest.getToken()).split("SPLIT");
         if(decrypt.length != 2) throw new NotMatchedCryptException("잘못된 토큰 값입니다.");
+        if(!decrypt[1].equals(principal.getName())) {
+            throw new NotMatchedUsernameException("잘못된 토큰 값입니다.");
+        }
         this.teamService.reject(Long.parseLong(decrypt[0]), decrypt[1]);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/quit/{id}")
-    public ResponseEntity<TeamJoinResponse> quitTeam(@PathVariable Long id, Principal principal) {
-        Team team = this.teamService.quitTeam(id, principal.getName());
-        return ResponseEntity.ok(new TeamJoinResponse(team.getId()));
+    public ResponseEntity<?> quitTeam(@PathVariable Long id, Principal principal) {
+        this.teamService.quitTeam(id, principal.getName());
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/join/{id}")
-    public ResponseEntity<TeamJoinResponse> joinTeam(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Long> joinTeam(@PathVariable Long id, Principal principal) {
         Team team = this.teamService.joinTeam(id, principal.getName());
-        return ResponseEntity.ok(new TeamJoinResponse(team.getId()));
+        return ResponseEntity.ok(team.getId());
     }
 
     @GetMapping(value = "/{id}")

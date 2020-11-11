@@ -2,16 +2,22 @@ package com.yunseong.board.domain;
 
 
 import com.yunseong.board.api.BoardCategory;
+import com.yunseong.board.api.events.BoardAddRecommendEvent;
 import com.yunseong.common.AlreadyExistedElementException;
 import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
+import io.eventuate.tram.events.common.DomainEvent;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.text.ParseException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,21 +40,20 @@ public class Board {
 
     private long readCount;
 
-    private boolean isDifferent;
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "recommender_name")
+    private Recommender recommender;
 
     @Enumerated(EnumType.STRING)
     private BoardCategory boardCategory;
-
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "recommenders", joinColumns = @JoinColumn(name = "board_id"))
-    @Column(name = "recommender")
-    private final Set<String> recommend = new HashSet<>();
 
     @CreatedDate
     private LocalDateTime createdTime;
 
     @LastModifiedDate
     private LocalDateTime updatedTime;
+
+    private boolean isDifferent;
 
     private boolean isDelete;
 
@@ -57,13 +62,14 @@ public class Board {
         this.subject = subject;
         this.content = content;
         this.boardCategory = boardCategory;
-        this.isDifferent = isDifferent;
         this.readCount = 0;
+        this.isDifferent = isDifferent;
         this.isDelete = false;
+        this.recommender = new Recommender();
     }
 
-    public void addRecommend(String username) {
-        if(!this.recommend.add(username)) throw new AlreadyExistedElementException("이미 당신은 해당 게시글을 추천하였습니다");
+    public DomainEvent addRecommend(String username) throws ParseException {
+        return this.recommender.addRecommender(username);
     }
 
     public void revise(String writer, BoardRevision boardRevision) {

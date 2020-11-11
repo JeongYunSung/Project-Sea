@@ -7,8 +7,7 @@
 - Project Service : 주요 서비스로서 프로젝트(학술제, 멘토멘티, 협업 등)을 하고자 하는사람들끼리 연결해주는 서비스
 - Team Service: 위 Project Service에서 구성원들을 묶어서 저장하는 서비스
 - WeClass Service : 프로젝트가 시작할경우 구성원들끼리 파일 공유 및 공지관련 등의 커뮤니티 서비스
-- QnA Service : 프로젝트가 시작하기전에 궁금한점을 물어보는 서비스
-- Board Service : 공지사항, 자유게시판, 학과게시판등의 게시판 서비스이다
+- Board Service : 공지사항, 자유게시판, 학과게시판, 댓글 등의 게시판 서비스이다
 - API Server : 여러 서비스들의 창구역할을 하는 GraphQL기반의 API Server이다
 
 구현 상황
@@ -19,16 +18,14 @@
 - Team Service : 프로젝트 구성원 참가 및 탈퇴 프로젝트 시작 찬반투표 구현
 - WeClass Service : 클래스 공지사항, 보고서 작성, 확인 등 구현
 - Board Service : 이미지 업로드, 게시판 생성, 확인, 수정, 추천, 삭제, 검색, 댓글 및 대댓글 구현
-- QnA Service : 설계단계
-- API Server : Apollo-Server를 이용한 GraphQL, Node 서버, Proxy클래스 구현
+- API Server : Apollo-Server를 이용한 GraphQL, Node 서버 구축
 
 사용한 기술
 
 - Spring Boot & Scheduler
 - JPA & QueryDSL & MariaDB
 - Eventuate Tram & Kafka
-- GraphQL & GraphQL-Yoga(express)
-- Typescript & Webpack
+- GraphQL & GraphQL-Yoga(express) & Typescript
 
 도입예정 기술
 

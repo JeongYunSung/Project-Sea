@@ -53,8 +53,10 @@ public class NotificationService {
         return this.notificationRepository.findByUsername(username, pageable);
     }
 
-    public Notification findById(long id) {
+    @Transactional
+    public Notification findById(long id, String username) {
         Notification notification = this.notificationRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(id + "번호를 가진 Notification 엔티티가 존재하지 않습니다."));
+        if(!notification.getUsername().equals(username)) throw new NotMatchedUsernameException("해당 메일은 존재하지 않습니다.");
         if(!notification.isRead()) {
             notification.read();
         }

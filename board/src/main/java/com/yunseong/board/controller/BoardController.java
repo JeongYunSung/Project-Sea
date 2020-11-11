@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/boards")
@@ -33,6 +34,20 @@ public class BoardController {
     @PostAuthorize("(isAnonymous() and (returnObject.body.category.readPermission.name() == 'ANONYMOUS')) or (#oauth2.hasScope('board_read') and hasRole('ROLE_' + returnObject.body.category.readPermission.name()))")
     public ResponseEntity<BoardDetailResponse> findBoard(@PathVariable long id) {
         return ResponseEntity.ok(this.boardService.findBoard(id));
+    }
+
+    @GetMapping(value = "/me", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PagedModel<BoardSimpleResponse>> findMyBoards(Principal principal, @PageableDefault Pageable pageable) {
+        Page<BoardSimpleResponse> page = this.boardService.findMyBoards(principal.getName(), pageable).map(b -> new BoardSimpleResponse(b.getId(), b.getSubject(), b.getContent(), b.getBoardCategory(), b.getCreatedTime()));
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
+        PagedModel<BoardSimpleResponse> model = PagedModel.of(page.getContent(), metadata);
+        return ResponseEntity.ok(model);
+    }
+
+    @GetMapping(value = "/best", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<HotBoardResponse>> findHotBoards(@ModelAttribute HotBoardSearchCondition boardSearchCondition) {
+        return ResponseEntity.ok(this.boardService.findsHotBoard(boardSearchCondition));
     }
 
     @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -55,7 +70,7 @@ public class BoardController {
     @PreAuthorize("#oauth2.hasScope('board_write') and hasRole('ROLE_' + #request.category.writePermission.name())")
     public ResponseEntity<Long> createBoard(@ModelAttribute BoardCreateRequest request, @RequestPart(required = false, name = "file") MultipartFile[] files, Principal principal) {
         Board board = this.boardService.createBoard(principal.getName(), request, false);
-        if(files != null && files.length > 0) this.fileService.save(board.getId(), files);
+        this.fileService.save(board.getId(), files);
         return new ResponseEntity<>(board.getId(), HttpStatus.CREATED);
     }
 
@@ -79,9 +94,11 @@ public class BoardController {
     }
 
     @PreAuthorize("hasRole('ROLE_' + @boardService.getCategory(#id).writePermission.name())")
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> reviseBoard(@PathVariable long id, @RequestBody BoardRevision boardRevision, Principal principal) {
-        return ResponseEntity.ok(this.boardService.reviseBoard(id, principal.getName(), boardRevision).getId());
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Long> reviseBoard(@PathVariable long id, @ModelAttribute BoardRevision boardRevision, @RequestPart(required = false, name = "file") MultipartFile[] files, Principal principal) {
+        Long bid = this.boardService.reviseBoard(id, principal.getName(), boardRevision).getId();
+        this.fileService.save(bid, files);
+        return ResponseEntity.ok(bid);
     }
 
     @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)

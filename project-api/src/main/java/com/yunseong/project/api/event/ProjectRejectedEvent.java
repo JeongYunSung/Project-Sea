@@ -14,5 +14,5 @@ import java.util.Set;
 public class ProjectRejectedEvent implements ProjectEvent {
 
     private long id;
-    private Set<String> usernames;
+    private List<String> usernames;
 }

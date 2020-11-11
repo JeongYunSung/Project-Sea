@@ -1,5 +1,6 @@
 package com.yunseong.team.service;
 
+import com.yunseong.common.AlreadyExistedEntityException;
 import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.api.event.TeamEvent;
 import com.yunseong.team.domain.Team;
@@ -60,6 +61,7 @@ public class TeamService {
 
     public Team joinTeam(long teamId, String username) throws EntityNotFoundException {
         Team team = getTeamByTeamId(teamId);
+        if(team.isUser(username)) throw new AlreadyExistedEntityException("이미 팀에 가입되어있습니다");
         this.teamDomainEventPublisher.publish(team, team.join(username));
         return team;
     }
@@ -92,11 +94,6 @@ public class TeamService {
     @Transactional(readOnly = true)
     public Team findTeamMembersByTeamId(long teamId) {
         return this.teamRepository.findFetchByTeamId(teamId).orElseThrow(() -> new EntityNotFoundException("해당 프로젝트는 존재하지 않습니다."));
-    }
-
-    @Transactional(readOnly = true)
-    public Page<Long> findTeamByUsername(String username, Pageable pageable) {
-        return this.teamRepository.findByUsername(username, pageable);
     }
 
     public boolean batchTeam(List<Long> ids) {

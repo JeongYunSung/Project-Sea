@@ -1,9 +1,10 @@
 package com.yunseong.project.controller;
 
-import com.yunseong.common.AlreadyExistedElementException;
+import com.yunseong.common.CannotReviseBoardIfWriterNotWereException;
 import com.yunseong.common.UnsupportedStateTransitionException;
 import com.yunseong.project.domain.EmptyCollectionException;
 import com.yunseong.project.service.CannotReadBecausePrivateProjectException;
+import com.yunseong.project.service.NotReviseForUnsupportedException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -16,17 +17,24 @@ import javax.persistence.EntityNotFoundException;
 @RestControllerAdvice
 public class ProjectControllerAdvice {
 
-    @ExceptionHandler(EmptyCollectionException.class)
-    public ResponseEntity<?> handleEmptyCollectionException(EmptyCollectionException exception) {
+    @ExceptionHandler(NotReviseForUnsupportedException.class)
+    public ResponseEntity<?> handleNotReviseForUnsupportedException(NotReviseForUnsupportedException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
-        errors.rejectValue("empty collection", exception.getMessage());
+        errors.reject("can not revise", exception.getMessage());
         return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 
-    @ExceptionHandler(AlreadyExistedElementException.class)
-    public ResponseEntity<?> handleAlreadyExistedElementException(AlreadyExistedElementException exception) {
+    @ExceptionHandler(CannotReviseBoardIfWriterNotWereException.class)
+    public ResponseEntity<?> handleCannotReviseBoardIfWriterNotWereException(CannotReviseBoardIfWriterNotWereException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
-        errors.rejectValue("username", exception.getMessage());
+        errors.reject("can not revise", exception.getMessage());
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
+    }
+
+    @ExceptionHandler(EmptyCollectionException.class)
+    public ResponseEntity<?> handleEmptyCollectionException(EmptyCollectionException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.reject("empty collection", exception.getMessage());
         return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 

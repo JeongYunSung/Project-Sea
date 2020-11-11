@@ -6,7 +6,7 @@ import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.yunseong.board.api.BoardCategory;
 import com.yunseong.board.controller.BoardSearchCondition;
-import com.yunseong.board.controller.BoardSearchResponse;
+import com.yunseong.board.controller.HotBoardSearchCondition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.support.PageableExecutionUtils;
@@ -17,11 +17,13 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 import static com.yunseong.board.domain.QBoard.board;
+import static com.yunseong.board.domain.QRecommendStatistics.recommendStatistics;
 
 @Repository
 public class BoardRepositoryImpl implements BoardQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final QRecommender recommender = new QRecommender("myRecommender");
 
     public BoardRepositoryImpl(EntityManager entityManager) {
         this.jpaQueryFactory = new JPAQueryFactory(entityManager);
@@ -29,13 +31,13 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
 
     @Override
     public Page<Board> findPageByQuery(BoardSearchCondition condition, Pageable pageable) {
-        StringPath recommenders = Expressions.stringPath("recommenders");
+        StringPath sRecommender = Expressions.stringPath("sRecommender");
         List<Board> content = this.jpaQueryFactory
-//                .select(new QBoardSearchResponse(board.id, board.subject, board.writer, board.boardCategory, board.createdTime, recommenders.count())).distinct()
                 .select(board).distinct()
                 .from(board)
-                .where(board.isDifferent.isFalse(), recommendCountLoe(condition, recommenders), eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())
-                .leftJoin(board.recommend, recommenders).fetchJoin()
+                .where(board.isDelete.isFalse(), board.isDifferent.isFalse(), eqCategory(condition.getCategory()), containsSubject(condition), containsWriter(condition))
+                .innerJoin(board.recommender, recommender).fetchJoin()
+                .leftJoin(recommender.recommender, sRecommender).fetchJoin()
                 .orderBy(board.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -44,11 +46,20 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
                 this.jpaQueryFactory
                         .select(board.count())
                         .from(board)
-                        .where(eqCategory(condition), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())::fetchCount);
+                        .where(eqCategory(condition.getCategory()), containsSubject(condition), containsWriter(condition), board.isDelete.isFalse())::fetchCount);
     }
 
-    private BooleanExpression recommendCountLoe(BoardSearchCondition condition, StringPath recommenders) {
-        return (condition.getRecommendCount() != null && condition.getRecommendCount() > 0) ? recommenders.count().goe(condition.getRecommendCount()) : null;
+    @Override
+    public List<Board> findHotBoards(HotBoardSearchCondition condition) {
+        return this.jpaQueryFactory
+                .select(board).distinct()
+                .from(board)
+                .where(this.eqCategory(condition.getCategory()), recommendStatistics.recommendDate.between(condition.getMinDate(), condition.getMaxDate()))
+                .innerJoin(board.recommender, recommender).fetchJoin()
+                .innerJoin(recommender.recommendStatistics, recommendStatistics).fetchJoin()
+                .groupBy(board.id)
+                .orderBy(recommendStatistics.value.sum().desc())
+                .limit(condition.getSize()).fetch();
     }
 
     private BooleanExpression containsWriter(BoardSearchCondition condition) {
@@ -59,7 +70,7 @@ public class BoardRepositoryImpl implements BoardQueryRepository {
         return (condition.getSubject() != null && StringUtils.hasText(condition.getSubject())) ? board.subject.contains(condition.getSubject()) : null;
     }
 
-    private BooleanExpression eqCategory(BoardSearchCondition condition) {
-        return condition.getCategory() != null ? board.boardCategory.eq(condition.getCategory()) : null;
+    private BooleanExpression eqCategory(BoardCategory category) {
+        return category != null ? board.boardCategory.eq(category) : null;
     }
 }

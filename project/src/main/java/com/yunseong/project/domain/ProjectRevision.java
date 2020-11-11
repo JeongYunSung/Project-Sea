@@ -14,6 +14,5 @@ public class ProjectRevision {
 
     private String subject;
     private String content;
-    private BoardCategory category;
     private boolean open;
 }

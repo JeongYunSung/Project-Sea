@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -13,5 +14,5 @@ import java.util.Set;
 public class ProjectStartedEvent implements ProjectEvent {
 
     private long id;
-    private Set<String> usernames;
+    private List<String> usernames;
 }

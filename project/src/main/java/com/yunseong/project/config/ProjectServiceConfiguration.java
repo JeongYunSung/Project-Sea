@@ -4,7 +4,6 @@ import com.yunseong.project.domain.ProjectDomainEventPublisher;
 import com.yunseong.project.sagaparticipants.BoardProxyService;
 import com.yunseong.project.sagaparticipants.ProjectProxyService;
 import com.yunseong.project.sagaparticipants.TeamProxyService;
-import com.yunseong.project.sagaparticipants.WeClassProxyService;
 import com.yunseong.project.sagas.batchproject.BatchProjectSaga;
 import com.yunseong.project.sagas.batchproject.BatchProjectSagaData;
 import com.yunseong.project.sagas.cancelproject.CancelProjectSaga;
@@ -14,7 +13,7 @@ import com.yunseong.project.sagas.createproject.CreateProjectSagaState;
 import com.yunseong.project.sagas.reviseproject.ReviseProjectSaga;
 import com.yunseong.project.sagas.reviseproject.ReviseProjectSagaData;
 import com.yunseong.project.sagas.startproject.StartProjectSaga;
-import com.yunseong.project.sagas.startproject.StartProjectSagaState;
+import com.yunseong.project.sagas.startproject.StartProjectSagaData;
 import io.eventuate.tram.commands.producer.CommandProducer;
 import io.eventuate.tram.events.publisher.DomainEventPublisher;
 import io.eventuate.tram.messaging.consumer.MessageConsumer;
@@ -42,8 +41,8 @@ public class ProjectServiceConfiguration {
     }
 
     @Bean
-    public SagaManager<StartProjectSagaState> startProjectSagaSagaManager(StartProjectSaga saga, SagaInstanceRepository sagaInstanceRepository, CommandProducer commandProducer, MessageConsumer messageConsumer,
-                                                                           SagaCommandProducer sagaCommandProducer, SagaLockManager sagaLockManager) {
+    public SagaManager<StartProjectSagaData> startProjectSagaSagaManager(StartProjectSaga saga, SagaInstanceRepository sagaInstanceRepository, CommandProducer commandProducer, MessageConsumer messageConsumer,
+                                                                         SagaCommandProducer sagaCommandProducer, SagaLockManager sagaLockManager) {
         return new SagaManagerImpl<>(saga, sagaInstanceRepository, commandProducer, messageConsumer, sagaLockManager, sagaCommandProducer);
     }
 
@@ -77,8 +76,8 @@ public class ProjectServiceConfiguration {
     }
 
     @Bean
-    public StartProjectSaga startProjectSaga(ProjectProxyService proxyService, TeamProxyService teamProxyService, WeClassProxyService weClassProxyService) {
-        return new StartProjectSaga(proxyService, teamProxyService, weClassProxyService);
+    public StartProjectSaga startProjectSaga() {
+        return new StartProjectSaga();
     }
 
     @Bean

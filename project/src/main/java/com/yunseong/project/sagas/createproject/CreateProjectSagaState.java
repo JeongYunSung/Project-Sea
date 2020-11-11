@@ -10,6 +10,8 @@ import com.yunseong.project.sagaparticipants.ConfirmCancelProjectCommand;
 import com.yunseong.project.sagaparticipants.RegisterBoardCommand;
 import com.yunseong.project.sagaparticipants.RegisterTeamCommand;
 import lombok.*;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -29,6 +31,16 @@ public class CreateProjectSagaState {
     @NonNull
     private BoardDetail boardDetail;
 
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+
     public ConfirmCancelProjectCommand makeProjectConfirmCancelCommand() {
         return new ConfirmCancelProjectCommand(this.projectId);
     }
@@ -38,7 +50,7 @@ public class CreateProjectSagaState {
     }
 
     public CreateBoardCommand makeCreateBoardCommand() {
-        return new CreateBoardCommand(this.projectId, this.boardDetail.getWriter(), this.boardDetail.getSubject(), this.boardDetail.getContent(), this.boardDetail.getBoardCategory(), this.boardDetail.getImages());
+        return new CreateBoardCommand(this.projectId, this.boardDetail);
     }
 
     public void handleCreateBoardReply(CreateBoardReply reply) {

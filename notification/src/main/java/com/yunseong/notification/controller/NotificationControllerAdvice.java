@@ -1,5 +1,6 @@
 package com.yunseong.notification.controller;
 
+import com.yunseong.notification.service.NotMatchedUsernameException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -11,6 +12,13 @@ import javax.persistence.EntityNotFoundException;
 
 @RestControllerAdvice
 public class NotificationControllerAdvice {
+
+    @ExceptionHandler(NotMatchedUsernameException.class)
+    public ResponseEntity<?> handleNotMatchedUsernameException(NotMatchedUsernameException exception) {
+        Errors errors = new BeanPropertyBindingResult(null, "");
+        errors.reject("not matched", exception.getMessage());
+        return ResponseEntity.badRequest().body(errors.getAllErrors());
+    }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {

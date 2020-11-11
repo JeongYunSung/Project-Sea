@@ -1,10 +1,11 @@
-package com.yunseong.project.api.controller;
+package com.yunseong.project.controller;
 
 import com.yunseong.board.api.BoardCategory;
-import com.yunseong.project.api.event.ProjectTheme;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -18,5 +19,6 @@ public class CreateProjectRequest {
     private int minSize;
     private int maxSize;
     private boolean open;
-    private LocalDate lastDate;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date lastDate;
 }

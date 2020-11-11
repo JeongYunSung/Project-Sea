@@ -13,6 +13,6 @@ import java.util.List;
 public class TeamJoinedEvent implements TeamEvent {
 
     private Long projectId;
-    private TeamMemberDetail teamMemberDetail;
+    private String username;
     private List<TeamMemberDetail> teamMembers;
 }

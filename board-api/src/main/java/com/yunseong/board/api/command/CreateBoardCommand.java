@@ -1,6 +1,7 @@
 package com.yunseong.board.api.command;
 
 import com.yunseong.board.api.BoardCategory;
+import com.yunseong.board.api.BoardDetail;
 import io.eventuate.tram.commands.common.Command;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,9 +15,5 @@ import org.springframework.web.multipart.MultipartFile;
 public class CreateBoardCommand implements Command {
 
     private long projectId;
-    private String writer;
-    private String subject;
-    private String content;
-    private BoardCategory boardCategory;
-    private MultipartFile[] images;
+    private BoardDetail boardDetail;
 }

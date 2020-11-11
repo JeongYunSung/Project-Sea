@@ -4,12 +4,9 @@ import com.yunseong.board.api.BoardDetail;
 import com.yunseong.board.api.BoardServiceChannels;
 import com.yunseong.board.api.command.ReviseBoardCommand;
 import com.yunseong.project.api.ProjectServiceChannels;
-import com.yunseong.project.api.TeamServiceChannels;
-import com.yunseong.project.api.command.IsLeaderTeamCommand;
 import com.yunseong.project.sagaparticipants.BeginReviseProjectCommand;
 import com.yunseong.project.sagaparticipants.ConfirmReviseProjectCommand;
 import com.yunseong.project.sagaparticipants.UndoBeginReviseProjectCommand;
-import com.yunseong.project.sagas.cancelproject.CancelProjectSagaData;
 import io.eventuate.tram.commands.consumer.CommandWithDestination;
 import io.eventuate.tram.sagas.orchestration.SagaDefinition;
 import io.eventuate.tram.sagas.simpledsl.SimpleSaga;
@@ -54,13 +51,13 @@ public class ReviseProjectSaga implements SimpleSaga<ReviseProjectSagaData> {
 
     private CommandWithDestination makeReviseBoardCommand(ReviseProjectSagaData data) {
         return send(new ReviseBoardCommand(data.getProjectId(), new BoardDetail(data.getUsername(), data.getProjectRevision().getSubject(), data.getProjectRevision().getContent(),
-                data.getProjectRevision().getCategory(), null)))
+                null, data.getImages())))
                 .to(BoardServiceChannels.boardServiceChannel)
                 .build();
     }
 
     private CommandWithDestination makeConfirmReviseProjectCommand(ReviseProjectSagaData data) {
-        return send(new ConfirmReviseProjectCommand(data.getProjectId(), data.getProjectRevision().getSubject(), data.getProjectRevision().isOpen()))
+        return send(new ConfirmReviseProjectCommand(data.getProjectId(), data.getProjectRevision()))
                 .to(ProjectServiceChannels.projectServiceChannel)
                 .build();
     }

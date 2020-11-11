@@ -51,10 +51,7 @@ public class TeamCommandHandlers {
         try {
             CreateTeamCommand command = commandMessage.getCommand();
             Team team = this.teamService.createTeam(command.getProjectId(), command.getUsername(), command.getMinSize(), command.getMaxSize());
-            if(team != null) {
-                return withLock(Team.class, team.getId()).withSuccess(new CreateTeamReply(team.getId()));
-            }
-            return withFailure();
+            return withLock(Team.class, team.getId()).withSuccess(new CreateTeamReply(team.getId()));
         } catch (Exception e) {
             return withFailure();
         }

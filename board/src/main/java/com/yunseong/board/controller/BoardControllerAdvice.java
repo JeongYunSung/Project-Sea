@@ -20,14 +20,14 @@ public class BoardControllerAdvice {
     @ExceptionHandler(AlreadyExistedElementException.class)
     public ResponseEntity<?> handleAlreadyExistedElementException(AlreadyExistedElementException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
-        errors.rejectValue("username", exception.getMessage());
+        errors.reject("username", exception.getMessage());
         return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException exception) {
         Errors errors = new BeanPropertyBindingResult(null, "");
-        errors.rejectValue("username", "해당 계정의 소유자는 존재하지 않습니다.");
+        errors.reject("username", "해당 계정의 소유자는 존재하지 않습니다.");
         return ResponseEntity.badRequest().body(errors.getAllErrors());
     }
 

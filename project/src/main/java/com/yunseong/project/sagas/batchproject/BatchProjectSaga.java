@@ -1,5 +1,8 @@
 package com.yunseong.project.sagas.batchproject;
 
+import com.yunseong.board.api.BoardServiceChannels;
+import com.yunseong.board.api.command.BatchBoardCommand;
+import com.yunseong.board.api.command.BatchUndoBoardCommend;
 import com.yunseong.project.api.ProjectServiceChannels;
 import com.yunseong.project.api.TeamServiceChannels;
 import com.yunseong.project.api.command.BatchTeamCommand;
@@ -26,6 +29,9 @@ public class BatchProjectSaga implements SimpleSaga<BatchProjectSagaData> {
                     .invokeParticipant(this::batchPending)
                     .withCompensation(this::batchUndo)
                 .step()
+                    .invokeParticipant(this::batchBoard)
+                    .withCompensation(this::batchUndoBoard)
+                .step()
                     .invokeParticipant(this::batchTeam)
                     .withCompensation(this::batchUndoTeam)
                 .step()
@@ -46,6 +52,18 @@ public class BatchProjectSaga implements SimpleSaga<BatchProjectSagaData> {
 
     private CommandWithDestination batchUndo(BatchProjectSagaData data) {
         return send(new BatchUndoProjectCommand(data.getProjectIds()))
+                .to(BoardServiceChannels.boardServiceChannel)
+                .build();
+    }
+
+    private CommandWithDestination batchBoard(BatchProjectSagaData data) {
+        return send(new BatchBoardCommand(data.getBoardIds()))
+                .to(BoardServiceChannels.boardServiceChannel)
+                .build();
+    }
+
+    private CommandWithDestination batchUndoBoard(BatchProjectSagaData data) {
+        return send(new BatchUndoBoardCommend(data.getBoardIds()))
                 .to(ProjectServiceChannels.projectServiceChannel)
                 .build();
     }
@@ -58,7 +76,7 @@ public class BatchProjectSaga implements SimpleSaga<BatchProjectSagaData> {
 
     private CommandWithDestination batchUndoTeam(BatchProjectSagaData data) {
         return send(new BatchUndoTeamCommand(data.getProjectIds()))
-                .to(ProjectServiceChannels.projectServiceChannel)
+                .to(TeamServiceChannels.teamServiceChannel)
                 .build();
     }
 

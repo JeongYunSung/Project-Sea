@@ -3,6 +3,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web:${springBootversion}"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootversion}"
     implementation "io.eventuate.tram.core:eventuate-tram-commands:${eventuateTramVersion}"
+    implementation "io.eventuate.tram.core:eventuate-tram-spring-events:${eventuateTramVersion}"
     compileOnly 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
 }

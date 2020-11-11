@@ -14,5 +14,4 @@ public class BoardSearchCondition {
     private String writer;
     private String subject;
     private BoardCategory category;
-    private Long recommendCount;
 }

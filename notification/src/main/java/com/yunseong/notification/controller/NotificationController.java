@@ -23,14 +23,14 @@ public class NotificationController {
 
     @GetMapping("/me")
     public ResponseEntity<PagedModel<NotificationBasicResponse>> findByUsername(Principal principal, @PageableDefault Pageable pageable) {
-        Page<NotificationBasicResponse> page = this.notificationService.findByUsername(principal.getName(), pageable).map(n -> new NotificationBasicResponse(n.getId(), n.getSubject(), n.isRead()));
+        Page<NotificationBasicResponse> page = this.notificationService.findByUsername(principal.getName(), pageable).map(n -> new NotificationBasicResponse(n.getId(), n.getSubject(), n.isRead(), n.getCreatedDate()));
         PagedModel.PageMetadata pageMetadata = new PagedModel.PageMetadata(page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages());
         return ResponseEntity.ok(PagedModel.of(page.getContent(), pageMetadata));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NotificationDetailResponse> findById(@PathVariable long id) {
-        Notification notification = this.notificationService.findById(id);
-        return ResponseEntity.ok(new NotificationDetailResponse(notification.getSubject(), notification.getContent()));
+    public ResponseEntity<NotificationDetailResponse> findById(@PathVariable long id, Principal principal) {
+        Notification notification = this.notificationService.findById(id, principal.getName());
+        return ResponseEntity.ok(new NotificationDetailResponse(notification.getSubject(), notification.getContent(), notification.getCreatedDate()));
     }
 }

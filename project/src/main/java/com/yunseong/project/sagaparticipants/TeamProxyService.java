@@ -13,18 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class TeamProxyService {
 
-    public final CommandEndpoint<ApproveTeamCommand> approve = CommandEndpointBuilder
-            .forCommand(ApproveTeamCommand.class)
-            .withChannel(TeamServiceChannels.teamServiceChannel)
-            .withReply(Success.class)
-            .build();
-
-    public final CommandEndpoint<RejectTeamCommand> reject = CommandEndpointBuilder
-            .forCommand(RejectTeamCommand.class)
-            .withChannel(TeamServiceChannels.teamServiceChannel)
-            .withReply(Success.class)
-            .build();
-
     public final CommandEndpoint<CreateTeamCommand> create = CommandEndpointBuilder
             .forCommand(CreateTeamCommand.class)
             .withChannel(TeamServiceChannels.teamServiceChannel)

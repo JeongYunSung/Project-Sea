@@ -6,13 +6,11 @@ import lombok.Getter;
 @Getter
 public class ConfirmReviseProjectCommand extends ProjectCommand {
 
-    private String subject;
-    private boolean isPublic;
+    private ProjectRevision projectRevision;
 
-    public ConfirmReviseProjectCommand(long projectId, String subject, boolean isPublic) {
+    public ConfirmReviseProjectCommand(long projectId, ProjectRevision projectRevision){
         super(projectId);
-        this.subject = subject;
-        this.isPublic = isPublic;
+        this.projectRevision = projectRevision;
     }
 
     public ConfirmReviseProjectCommand() {
