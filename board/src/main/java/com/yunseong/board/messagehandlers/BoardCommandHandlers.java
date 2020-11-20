@@ -29,8 +29,11 @@ public class BoardCommandHandlers {
         return SagaCommandHandlersBuilder
                 .fromChannel(BoardServiceChannels.boardServiceChannel)
                 .onMessage(CreateBoardCommand.class, this::createBoard)
+
                 .onMessage(ReviseBoardCommand.class, this::reviseBoard)
+
                 .onMessage(DeleteBoardCommand.class, this::deleteBoard)
+
                 .onMessage(BatchBoardCommand.class, this::batchBoard)
                 .onMessage(BatchUndoBoardCommend.class, this::batchUndoBoard)
                 .build();

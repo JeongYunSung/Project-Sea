@@ -88,13 +88,13 @@ public class NotificationServiceEventConsumer {
 
     private void sendNotification(String username, String subject, String content, boolean mail) {
         this.notificationService.createNotification(username, subject, content);
-//        String prefix = "[Project-Sea]";
-//        if(mail) {
-//            this.notificationService.sendMail(username, prefix + subject,
-//                    "<div style=\"font-family: Arial, Helvetica, sans-serif; text-align: center\">\n" +
-//                            "  <h1>" + subject + "</h1>\n" +
-//                            "  <hr>\n<p>" + String.join("</p><p>", content.split("\\|")) +
-//                            "</p></div>");
-//        }
+        String prefix = "[Project-Sea]";
+        if(mail) {
+            this.notificationService.sendMail(username, prefix + subject,
+                    "<div style=\"font-family: Arial, Helvetica, sans-serif; text-align: center\">\n" +
+                            "  <h1>" + subject + "</h1>\n" +
+                            "  <hr>\n<p>" + String.join("</p><p>", content.split("\\|")) +
+                            "</p></div>");
+        }
     }
 }

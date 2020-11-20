@@ -42,7 +42,6 @@ public class ProjectBoard {
 
     public void addRecommend(Date now, long value) {
         for(ProjectRecommendStatistics recommendStatistics : this.recommendStatistics) {
-            System.out.println(recommendStatistics.getRecommendDate().compareTo(now));
             if(recommendStatistics.getRecommendDate().compareTo(now)==0) {
                 recommendStatistics.setValue(value);
                 return;

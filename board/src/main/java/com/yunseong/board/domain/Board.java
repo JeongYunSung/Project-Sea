@@ -68,7 +68,7 @@ public class Board {
         this.recommender = new Recommender();
     }
 
-    public DomainEvent addRecommend(String username) throws ParseException {
+    public BoardAddRecommendEvent addRecommend(String username) throws ParseException {
         return this.recommender.addRecommender(username);
     }
 

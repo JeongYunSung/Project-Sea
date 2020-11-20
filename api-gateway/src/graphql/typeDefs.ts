@@ -134,7 +134,7 @@ const typeDefs = `
         searchProject(subject: String, state: String, category: String, username: String, page: Int, size: Int): ProjectPage
         bestProject(minDate: String!, maxDate: String!, size: Int!, category: String): [Project]
         findMyProject(page: Int, size: Int): ProjectPage
-        findProject(id: Float!): ProjectDetail
+        findProject(id: Float!, size: Int): ProjectDetail
     }
 
     type Mutation {

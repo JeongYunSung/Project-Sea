@@ -1,7 +1,6 @@
 package com.yunseong.project.history.domain;
 
 import com.yunseong.project.api.event.ProjectState;
-import com.yunseong.project.api.event.ProjectTheme;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

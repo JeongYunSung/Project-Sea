@@ -6,6 +6,10 @@ const config = require('./config/my-config.json');
 
 const router = express.Router();
 
+router.get('/', (req, res) => {
+    res.sendFile(__dirname + "/test.html");
+});
+
 router.get('/authenticate', (req, res) => {
     if(!req.query.token) {
         res.status(400).json({error: '잘못된 토큰값입니다.'});
@@ -18,8 +22,14 @@ router.get('/authenticate', (req, res) => {
         }
     `;
     request(endpoint, query)
-        .then(data => res.send(JSON.stringify(data)))
-        .catch(error => res.send(error));
+        .then(data => {
+            console.log(JSON.stringify(data));
+            res.sendFile("authenticate.html");
+        })
+        .catch(error => {
+            console.log(error);
+            res.sendFile("authenticate.html");
+        });
 });
 
 router.get('/images', async (req, res) => {

@@ -1,8 +1,10 @@
 package com.yunseong.board.service;
 
 import com.yunseong.board.api.BoardCategory;
+import com.yunseong.board.api.events.BoardAddRecommendEvent;
 import com.yunseong.board.controller.*;
 import com.yunseong.board.domain.*;
+import io.eventuate.tram.events.common.DomainEvent;
 import io.eventuate.tram.events.publisher.DomainEventPublisher;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
