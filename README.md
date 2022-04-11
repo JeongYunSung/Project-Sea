@@ -7,8 +7,8 @@
 - Project Service : 주요 서비스로서 프로젝트(학술제, 멘토멘티, 협업 등)을 하고자 하는사람들끼리 연결해주는 서비스
 - Team Service: 위 Project Service에서 구성원들을 묶어서 저장하는 서비스
 - WeClass Service : 프로젝트가 시작할경우 구성원들끼리 파일 공유 및 공지관련 등의 커뮤니티 서비스
-- Board Service : 공지사항, 자유게시판, 학과게시판, 댓글 등의 게시판 서비스이다
-- API Server : 여러 서비스들의 창구역할을 하는 GraphQL기반의 API Server이다
+- Board Service : 공지사항, 자유게시판, 학과게시판, 댓글 등의 게시판 서비스
+- API Server : 여러 서비스들의 창구역할을 하는 GraphQL기반의 API Server
 
 구현 상황
 
@@ -26,9 +26,3 @@
 - JPA & QueryDSL & MariaDB
 - Eventuate Tram & Kafka
 - GraphQL & GraphQL-Yoga(express) & Typescript
-
-도입예정 기술
-
-- Redis & CQRS (Project부분)
-- Docker & Kubernetes
-- 헬스체크 & 중앙로깅, 콘피그 서버
